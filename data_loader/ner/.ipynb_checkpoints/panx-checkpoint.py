@@ -76,7 +76,7 @@ class PANXDataset(MultilingualRawDataset):
             for which_split, wsplit in (
                 ("train", "trn"),
                 ("dev", "val"),
-                ("test", "tst"),
+#                 ("test", "tst"),
             ):
                 if which_split == "train":
                     which_split = f"train-{lang}.tsv"

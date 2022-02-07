@@ -102,7 +102,7 @@ def glue_example_to_feature(
 _skipped_tags = {"-NONE-", "NFP", "AFX"}
 
 class TaggingBertInputFeature(BertInputFeature):
-    def __init__(self, uid, input_ids, attention_mask, self_if_tgt, tags_ids):
+    def __init__(self, uid, input_ids, attention_mask, sent_if_tgt, tags_ids):
         super(TaggingBertInputFeature, self).__init__(
             uid, input_ids, attention_mask, None, None
         )

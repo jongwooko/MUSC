@@ -8,6 +8,7 @@ from .hooks.base_hook import HookContainer
 from .hooks import EvaluationRecorder
 from torch.utils.data import RandomSampler
 from collections import defaultdict, Counter
+from tqdm import tqdm
 
 
 class BaselineTuner(BaseTrainer):
@@ -19,6 +20,7 @@ class BaselineTuner(BaseTrainer):
         self.model_ptl = conf.ptl
 
     def _init_model_opt(self, model):
+        print (model)
         model = self._parallel_to_device(model)
         opt = torch.optim.Adam(model.parameters(), lr=self.conf.finetune_lr)
         opt.zero_grad()
@@ -57,14 +59,19 @@ class BaselineTuner(BaseTrainer):
     def train(
         self, model, tokenizer, data_iter, metric_name, adapt_loaders, hooks=None
     ):
+        print ("first of all")
         opt, model = self._init_model_opt(model)
         self.model = model
         self.model.train()
 
+        print ("self.model.train()")
+        
         hook_container = HookContainer(world_env={"trainer": self}, hooks=hooks)
         hook_container.on_train_begin()
 
-        for epoch_index in range(1, self.conf.finetune_epochs + 1):
+        print ("hook_container.on_train_begin()")
+        
+        for epoch_index in tqdm(range(1, self.conf.finetune_epochs + 1)):
             trn_iters = []
             for language in self.conf.trn_languages:
                 egs = adapt_loaders[language].trn_egs
