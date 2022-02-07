@@ -1,8 +1,8 @@
-from .glue.datasets import MRPCDataset
+# from .glue.datasets import MRPCDataset
 from .mldoc import MLDocDataset
 from .marc import MARCDataset
-from .ner import CONLL2003Dataset, PANXDataset
-from .argus import ARGUStanceDataset
+from .ner import PANXDataset # CONLL2003Dataset
+# from .argus import ARGUStanceDataset
 from .pawsx import PAWSXDataset
 from .NLI import XNLIDataset
 from .pos import UDPOSDataset
@@ -12,11 +12,11 @@ from .pos import UDPOSDataset
 task2dataset = {
     "mldoc": MLDocDataset,
     "marc": MARCDataset,
-    "argustan": ARGUStanceDataset,
+#     "argustan": ARGUStanceDataset,
     "pawsx": PAWSXDataset,
     "xnli": XNLIDataset,
-    "conll2003": CONLL2003Dataset,
-    "mrpc": MRPCDataset,
+#     "conll2003": CONLL2003Dataset,
+#     "mrpc": MRPCDataset,
     "panx": PANXDataset,
     "udpos": UDPOSDataset,
 }
