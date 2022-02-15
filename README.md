@@ -25,10 +25,10 @@ bash install_tools.sh
 ```
 source activate fsxlt
 conda install -c conda-forge transformers
+pip install networkx==1.11
 bash scripts/download_data.sh
 ```
 
-- [ ] udpos download (Error: 'DependencyTree' object has no attribute 'node')
 - [ ] MLDocs, MARC download
 
 ## Related to the target datasets

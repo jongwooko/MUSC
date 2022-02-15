@@ -7,6 +7,8 @@ import re
 def parse_id(id_str):
     if id_str == '_':
         return None
+    if "." in id_str:
+        return None
     ids = tuple(map(int, id_str.split("-")))
     if len(ids) == 1:
         return ids[0]
@@ -23,7 +25,7 @@ def parse_deps(dep_str):
     if dep_str == '_':
         return []
     dep_pairs = [pair.split(":") for pair in dep_str.split("|")]
-    return [(int(pair[0]), pair[1]) for pair in dep_pairs]
+    return [(int(pair[0]), pair[1]) for pair in dep_pairs if pair[0].isdigit()]
 
 
 
@@ -158,6 +160,18 @@ class DependencyTree(nx.DiGraph):
             spanheads.append(spanhead)
             spanhead_fused_token_dict[spanhead] = fusedform_idx
 
+        # try:
+        #     order = list(nx.topological_sort(self))
+        # except nx.NetworkXUnfeasible:
+        #     msg = 'Circular dependency detected between hooks'
+        #     problem_graph = ', '.join(f'{a} -> {b}'
+        #                   for a, b in nx.find_cycle(self))
+        #     print('nx.simple_cycles', list(nx.simple_cycles(self)))
+        #     print(problem_graph)
+        #     exit(0)
+            # for edge in list(nx.simple_cycles(self)):
+            #     self.remove_edge(edge[0], edge[1])
+        self = remove_all_cycle(self)
         bottom_up_order = [x for x in nx.topological_sort(self) if x in spanheads]
         for spanhead in bottom_up_order:
             fusedform_idx = spanhead_fused_token_dict[spanhead]
@@ -176,9 +190,10 @@ class DependencyTree(nx.DiGraph):
                 for depdict in external_dependents:
                     for localhead in depdict:
                         for ext_dep in depdict[localhead]:
-                            deprel = self[localhead][ext_dep]["deprel"]
-                            self.remove_edge(localhead,ext_dep)
-                            self.add_edge(spanhead,ext_dep,deprel=deprel)
+                            if ext_dep in self[localhead]:
+                                deprel = self[localhead][ext_dep]["deprel"]
+                                self.remove_edge(localhead,ext_dep)
+                                self.add_edge(spanhead,ext_dep,deprel=deprel)
 
                 #3- Remove B-level tokens
                 for int_dep in internal_dependents:
@@ -211,8 +226,8 @@ class DependencyTree(nx.DiGraph):
         # 5. remove all fused forms form the multi_tokens field
         self.graph["multi_tokens"] = {}
 
-        if not nx.is_tree(self):
-            print("Not a tree after fused-form heuristics:",self.get_sentence_as_string())
+        # if not nx.is_tree(self):
+        #     print("Not a tree after fused-form heuristics:",self.get_sentence_as_string())
 
     def filter_sentence_content(self,replace_subtokens_with_fused_forms=False, lang=None, posPreferenceDict=None,node_properties_to_remove=None,remove_deprel_suffixes=False,remove_arabic_diacritics=False):
         if replace_subtokens_with_fused_forms:
@@ -224,6 +239,17 @@ class DependencyTree(nx.DiGraph):
         if remove_arabic_diacritics:
             self.remove_arabic_diacritics()
 
+def remove_all_cycle(G):
+    GC = nx.DiGraph(G.edges())
+    edges = list(nx.simple_cycles(GC))
+    for edge in edges:
+        for i in range(len(edge)-1):
+            for j in range(i+1, len(edge)):
+                a, b = edge[i], edge[j]
+                if G.has_edge(a, b):
+                    # print('remove {} - {}'.format(a, b))
+                    G.remove_edge(a, b)
+    return G
 
 
 class CoNLLReader(object):
@@ -260,7 +286,7 @@ class CoNLLReader(object):
                 sent = DependencyTree()
             else:
                 raise Exception("Invalid input format in line nr: ", line_num, conll_line, filename)
-     
+
         return sentences
 
     def read_conll_2006_dense(self, filename):
@@ -300,9 +326,12 @@ class CoNLLReader(object):
                 for token_i in range(1, max(sent.nodes()) + 1):
                     token_dict = dict(sent.node[token_i])
                     head_i = sent.head_of(token_i)
-                    token_dict['head'] = head_i
-                    # print(head_i, token_i)
-                    token_dict['deprel'] = sent[head_i][token_i]['deprel']
+                    if head_i is None:
+                        token_dict['head'] = 0
+                        token_dict['deprel'] = ''
+                    else:
+                        token_dict['head'] = head_i
+                        token_dict['deprel'] = sent[head_i][token_i]['deprel']
                     token_dict['id'] = token_i
                     row = [str(token_dict.get(col, '_')) for col in columns]
                     if print_fused_forms and token_i in sent.graph["multi_tokens"]:
@@ -313,7 +342,7 @@ class CoNLLReader(object):
                        rowmulti = [str(currentmulti.get(col, '_')) for col in columns]
                        print(u"\t".join(rowmulti),file=out)
                     print(u"\t".join(row), file=out)
-            
+
             # emtpy line afterwards
             print(u"", file=out)
 
@@ -354,7 +383,7 @@ class CoNLLReader(object):
                                                         if k not in ('head', 'id', 'deprel', 'deps')})
                     for head, deprel in token_dict['deps']:
                         sent.add_edge(head, token_dict['id'], deprel=deprel, secondary=True)
-                else:
+                elif token_dict['id'] is not None:
                     #print(token_dict['id'])
                     first_token_id = int(token_dict['id'][0])
                     multi_tokens[first_token_id] = token_dict

@@ -7,7 +7,7 @@ In order to run experiments on XTREME, the first step is to download the depende
 bash install_tools.sh
 ```
 
-The next step is to download the data. You need to manually download `panx_dataset` (for NER) from [here](https://www.amazon.com/clouddrive/share/d3KGCRCIYwhKJF0H3eWA26hjg2ZCRhjpEQtDL70FSBN) (note that it will download as `AmazonPhotos.zip`) to the `data` directory. Finally, run the following command to download the remaining datasets:
+The next step is to download the data. To this end, first create a download folder with `mkdir -p download` in the root of this project. You then need to manually download `panx_dataset` (for NER) from [here](https://www.amazon.com/clouddrive/share/d3KGCRCIYwhKJF0H3eWA26hjg2ZCRhjpEQtDL70FSBN) (note that it will download as `AmazonPhotos.zip`) to the `download` directory. Finally, run the following command to download the remaining datasets:
 ```
 bash scripts/download_data.sh
 ```
