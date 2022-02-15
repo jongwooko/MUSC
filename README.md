@@ -23,10 +23,17 @@ bash install_tools.sh
 - Download NER dataset manually following ./data/README.md
 
 ```
-conda install networkx
 cd data
 bash scripts/download_data.sh
 ```
 
 - [ ] udpos download (Error: 'DependencyTree' object has no attribute 'node')
 - [ ] MLDocs, MARC download
+
+## Related to the target datasets
+- MLDoc  (Not provided. Refer to ./buckets/readme.md)
+- MARC   (Refer to ./buckets/marc)
+- XNLI   (Refer to ./buckets/xnli)
+- PAWSX  (Refer to ./buckets/pawsx)
+- POS    (Refer to ./buckets/udpos)
+- NER    (Refer to ./buckets/panx)
