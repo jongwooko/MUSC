@@ -215,8 +215,6 @@ function download_siqa {
     echo "Successfully downloaded data at $DIR/siqa" >> $DIR/download.log
 }
 
-source activate fsxlt
-
 download_xnli
 download_pawsx
 download_udpos

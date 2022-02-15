@@ -23,7 +23,8 @@ bash install_tools.sh
 - Download NER dataset manually following ./data/README.md
 
 ```
-cd data
+source activate fsxlt
+conda install -c conda-forge transformers
 bash scripts/download_data.sh
 ```
 
