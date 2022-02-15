@@ -20,9 +20,11 @@ LIB=$REPO/third_party
 mkdir -p $LIB
 
 # install conda env
-conda create --name xtreme --file conda-env.txt
-conda init bash
-conda activate xtreme
+conda create --name fsxlt --file conda-env.txt
+source activate fsxlt
+# conda create --name xtreme --file conda-env.txt
+# conda init bash
+# conda activate xtreme
 
 # install latest transformer
 cd $LIB
