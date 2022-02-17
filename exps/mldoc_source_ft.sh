@@ -9,4 +9,5 @@ python finetuning_baseline.py --dataset_name mldoc \
                               --eval_every_batch 50 \
                               --override False \
                               --train_fast False \
-                              --world 0
+                              --world 0 \
+                              --finetune_lr 1e-5

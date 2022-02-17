@@ -49,10 +49,7 @@ pip install -r requirements.txt
 
 4. Target Fine-tuning (Few-Shot Cross-Lingual Transfer, FS-XLT)
 
-
-
 5. Test
-
 ## Related to the target datasets
 - MLDoc  (Not provided. Refer to ./buckets/readme.md)
 - MARC   (Refer to ./buckets/marc)
