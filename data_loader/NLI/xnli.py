@@ -45,21 +45,23 @@ class XNLIDataset(MultilingualRawDataset):
 
     def create_contents(self):
         # for mnli, we only use train (no dev)
-        mnli_ = "./data/xnli/MNLI/"
+        mnli_ = "./data/download/xnli/"
         entries = []
-        for file_ in ["train_split.tsv"]:
+        for file_ in ["train-en.tsv"]:
             file_ = os.path.join(mnli_, file_)
             entries.extend(self.mnli_parse(file_, "trn"))
 
-        
-        xnli_ = "./data/xnli/XNLI-all/"
-        for which_split in ("dev", "test"):
-            file_ = os.path.join(xnli_, f"xnli.{which_split}.tsv")
-            if which_split == "dev":
-                which_split = "val"
-            else:
-                which_split = "tst"
-            entries.extend(self.xnli_parse(file_, which_split))
+        xnli_ = "./data/download/xnli/"
+        for lang_abbre in self.lang_abbres:
+            for which_split in ("dev", "test"):
+                file_ = os.path.join(xnli_, f"{which_split}-{lang_abbre}.tsv")
+                if which_split == "dev":
+                    which_split = "val"
+                elif which_split == "test":
+                    which_split = "tst"
+                else:
+                    raise ValueError
+                entries.extend(self.xnli_parse(file_, which_split, lang_abbre))
 
         entries = sorted(entries, key=lambda x: x[0])  # groupby requires contiguous
         for language, triplets in itertools.groupby(entries, key=lambda x: x[0]):
@@ -91,11 +93,10 @@ class XNLIDataset(MultilingualRawDataset):
     def mnli_parse(self, input_file, which_split):
         sentence_pair_egs = []
         with open(input_file, "r") as f:
-            next(f)
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
                 label = line[-1]
-                text_a, text_b = line[8], line[9]
+                text_a, text_b = line[0], line[1]
                 assert label in self.get_labels(), f"{label}, {input_file}"
                 sentence_pair_egs.append(
                     (
@@ -112,25 +113,44 @@ class XNLIDataset(MultilingualRawDataset):
         assert len(sentence_pair_egs) == 392702, f"{len(sentence_pair_egs)}"
         return sentence_pair_egs
 
-    def xnli_parse(self, input_file, which_split):
+    def xnli_parse(self, input_file, which_split, lang_abbre):
         sentence_pair_egs = []
-        with open(input_file, "r") as f:
-            next(f)
-            for idx, line in enumerate(f):
-                segs = line.strip().split("\t")
-                language_abbre, label = segs[0], segs[1]
-                text_a, text_b = segs[-3], segs[-2]  # tokenized already
-                sentence_pair_egs.append(
-                    (
-                        abbre2language[language_abbre],
-                        which_split,
-                        SentencePairExample(
-                            uid=f"{abbre2language[language_abbre]}-{idx}-{which_split}",
-                            text_a=text_a,
-                            text_b=text_b,
-                            label=label,
+        if which_split == 'val':
+            with open(input_file, "r") as f:
+                for idx, line in enumerate(f):
+                    line = line.strip().split("\t")
+                    label = line[-1]
+                    text_a, text_b = line[0], line[1]
+                    sentence_pair_egs.append(
+                        (
+                            abbre2language[lang_abbre],
+                            which_split,
+                            SentencePairExample(
+                                uid=f"{abbre2language[lang_abbre]}-{idx}-{which_split}",
+                                text_a=text_a,
+                                text_b=text_b,
+                                label=label,
+                            ),
                         ),
-                    ),
-                )
+                    )
+        elif which_split == 'tst':
+            with open(input_file, "r") as f:
+                for idx, line in enumerate(f):
+                    line = line.strip().split("\t")
+                    text_a, text_b = line[0], line[1]
+                    sentence_pair_egs.append(
+                        (
+                            abbre2language[lang_abbre],
+                            which_split,
+                            SentencePairExample(
+                                uid=f"{abbre2language[lang_abbre]}-{idx}-{which_split}",
+                                text_a=text_a,
+                                text_b=text_b,
+                                label=None,
+                            ),
+                        ),
+                    )
+        else:
+            raise ValueError
         print(len(sentence_pair_egs), input_file)
         return sentence_pair_egs

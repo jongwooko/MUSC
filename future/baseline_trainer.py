@@ -131,7 +131,8 @@ class BaselineTuner(BaseTrainer):
         val_scores = []
         for val_language in self.conf.trn_languages:
             val_loaders = adapt_loaders[val_language]
-            for split_ in ("val_egs", "tst_egs"):
+            for split_ in ["val_egs"]:
+            # for split_ in ["val_egs", "tst_egs"]:
                 val_loader = getattr(val_loaders, split_)
                 eval_res, _ = self._infer_one_loader(
                     model, val_loader, self.collocate_batch_fn, metric_name=metric_name

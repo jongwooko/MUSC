@@ -37,40 +37,43 @@ class TaggingDataIter(object):
             )
             
     def wrap_iter(self, task, model, which_split, tagged_sents, tokenizer, max_seq_len, do_cache):
-        cached_ = os.path.join(
-            "data",
-            "cached",
-            f"{task},{max_seq_len},{model},{which_split},{len(tagged_sents)},cached.pkl",
-        )
-        os.makedirs(os.path.dirname(cached_), exist_ok=True)
-        meta_ = cached_.replace(".pkl", ".metainfo")
-        if os.path.exists(cached_) and do_cache:
-            print(f"[INFO] loading cached dataset for {task}_{which_split}.")
-            with open(meta_, "r") as f:
-                meta = json.load(f)
-            assert meta["complete"]
-            with open(cached_, "rb") as f:
-                fts = pickle.load(f)
-            if fts["uid"] == meta["uid"]:
-                fts = fts["fts"]
-            else:
-                raise ValueError("uids of data and meta do not match ...")
+        if which_split == "tst":
+            return
         else:
-            print(f"[INFO] computing fresh dataset for {task}_{which_split}.")
-            fts = tagging_example_to_feature(
-                which_split, tagged_sents, tokenizer, self.raw_dataset.label2idx, max_seq_len,
+            cached_ = os.path.join(
+                "data",
+                "cached",
+                f"{task},{max_seq_len},{model},{which_split},{len(tagged_sents)},cached.pkl",
             )
-            if not do_cache:
-                return _TaggingIter(fts)
-            uid, complete = str(uuid.uuid4()), True
-            try:
-                with open(cached_, "wb") as f:
-                    pickle.dump({"fts": fts, "uid": uid}, f)
-            except:
-                complete = False
-            with open(meta_, "w") as f:
-                json.dump({"complete": complete, "uid": uid}, f)
-        return _TaggingIter(fts)
+            os.makedirs(os.path.dirname(cached_), exist_ok=True)
+            meta_ = cached_.replace(".pkl", ".metainfo")
+            if os.path.exists(cached_) and do_cache:
+                print(f"[INFO] loading cached dataset for {task}_{which_split}.")
+                with open(meta_, "r") as f:
+                    meta = json.load(f)
+                assert meta["complete"]
+                with open(cached_, "rb") as f:
+                    fts = pickle.load(f)
+                if fts["uid"] == meta["uid"]:
+                    fts = fts["fts"]
+                else:
+                    raise ValueError("uids of data and meta do not match ...")
+            else:
+                print(f"[INFO] computing fresh dataset for {task}_{which_split}.")
+                fts = tagging_example_to_feature(
+                    which_split, tagged_sents, tokenizer, self.raw_dataset.label2idx, max_seq_len,
+                )
+                if not do_cache:
+                    return _TaggingIter(fts)
+                uid, complete = str(uuid.uuid4()), True
+                try:
+                    with open(cached_, "wb") as f:
+                        pickle.dump({"fts": fts, "uid": uid}, f)
+                except:
+                    complete = False
+                with open(meta_, "w") as f:
+                    json.dump({"complete": complete, "uid": uid}, f)
+            return _TaggingIter(fts)
     
     @property
     def name(self):
@@ -141,46 +144,47 @@ class SeqClsDataIter(object):
                 do_cache=do_cache,
             )
             
-    def wrap_iter(
-        self, task, model, which_split, egs, tokenizer, max_seq_len, do_cache
-    ):
-        len_egs = 0 if egs is None else len(egs)
-        cached_ = os.path.join(
-            "data",
-            "cached",
-            f"{task},{max_seq_len},{model},{which_split},{len_egs},cached.pkl",
-        )
-        meta_ = cached_.replace(".pkl", ".metainfo")
-        if os.path.exists(cached_) and do_cache:
-            print("[INFO] loading cached dataset.")
-            with open(meta_, "r") as f:
-                meta = json.load(f)
-            assert meta["complete"]
-            with open(cached_, "rb") as f:
-                fts = pickle.load(f)
-            if fts["uid"] == meta["uid"]:
-                fts = fts["fts"]
-            else:
-                raise ValueError("uids of data and meta do not match ...")
+    def wrap_iter(self, task, model, which_split, egs, tokenizer, max_seq_len, do_cache):
+        if which_split == "tst":
+            return
         else:
-            print("[INFO] computing fresh dataset.")
-            if egs is None or len(egs) == 0:
-                fts = []
+            len_egs = 0 if egs is None else len(egs)
+            cached_ = os.path.join(
+                "data",
+                "cached",
+                f"{task},{max_seq_len},{model},{which_split},{len_egs},cached.pkl",
+            )
+            meta_ = cached_.replace(".pkl", ".metainfo")
+            if os.path.exists(cached_) and do_cache:
+                print("[INFO] loading cached dataset.")
+                with open(meta_, "r") as f:
+                    meta = json.load(f)
+                assert meta["complete"]
+                with open(cached_, "rb") as f:
+                    fts = pickle.load(f)
+                if fts["uid"] == meta["uid"]:
+                    fts = fts["fts"]
+                else:
+                    raise ValueError("uids of data and meta do not match ...")
             else:
-                fts = glue_example_to_feature(
-                    task, egs, tokenizer, max_seq_len, self.label_list
-                )
-            if not do_cache:
-                return _SeqClsIter(fts)
-            uid, complete = str(uuid.uuid4()), True
-            try:
-                with open(cached_, "wb") as f:
-                    pickle.dump({"fts": fts, "uid": uid}, f)
-            except:
-                complete = False
-            with open(meta_, "w") as f:
-                json.dump({"complete": complete, "uid": uid}, f)
-        return _SeqClsIter(fts)
+                print("[INFO] computing fresh dataset.")
+                if egs is None or len(egs) == 0:
+                    fts = []
+                else:
+                    fts = glue_example_to_feature(
+                        task, egs, tokenizer, max_seq_len, self.label_list
+                    )
+                if not do_cache:
+                    return _SeqClsIter(fts)
+                uid, complete = str(uuid.uuid4()), True
+                try:
+                    with open(cached_, "wb") as f:
+                        pickle.dump({"fts": fts, "uid": uid}, f)
+                except:
+                    complete = False
+                with open(meta_, "w") as f:
+                    json.dump({"complete": complete, "uid": uid}, f)
+            return _SeqClsIter(fts)
 
     @property
     def name(self):

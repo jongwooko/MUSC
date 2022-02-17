@@ -89,7 +89,7 @@ def glue_example_to_feature(
                 uid=eg.uid,
                 input_ids=input_ids,
                 attention_mask=attention_mask,
-                toekn_type_ids=token_type_ids,
+                token_type_ids=token_type_ids,
                 label=label_map[eg.label]
             )
         )

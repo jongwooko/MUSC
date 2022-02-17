@@ -13,6 +13,8 @@
 - [ ] Code works on all datasets. (PAWSX, XNLI)
 
 ## How to start (TODO: Jaehoon)
+All steps start from the root directory (i.e., FSXLT folder).
+
 1. Set conda env
 ```
 cd data
@@ -20,16 +22,34 @@ bash install_tools.sh
 ```
 
 2. Download datasets
-- Download NER dataset manually following ./data/README.md
+- For MLDocs dataset, refer to https://github.com/facebookresearch/MLDoc
+- For MARC dataset, refer to https://docs.opendata.aws/amazon-reviews-ml/readme.html
+- For XTREME datasets (XNLI, PAWSX, POS, NER), download NER dataset manually following ./data/README.md in advance.
 
 ```
 source activate fsxlt
 conda install -c conda-forge transformers
 pip install networkx==1.11
+
+cd data
 bash scripts/download_data.sh
 ```
 
-- [ ] MLDocs, MARC download
+3. Source Fine-tuning (Zero-Shot Cross-Lingual Transfer, ZS-XLT)
+```
+pip install -r requirements.txt
+```
+
+- [ ] for MLDoc dataset, `bash exps/mldoc_source_ft.sh`
+- [ ] for MARC dataset,  `bash exps/marc_source_ft.sh`
+- for XNLI dataset,  `bash exps/xnli_source_ft.sh`
+- [ ] for PAWSX dataset, `bash exps/pawsx_source_ft.sh`
+- [ ] for POS dataset,   `bash exps/pos_source_ft.sh`
+- [ ] for NER dataset,   `bash exps/panx_source_ft.sh`
+
+4. Target Fine-tuning (Few-Shot Cross-Lingual Transfer, FS-XLT)
+
+5. Test
 
 ## Related to the target datasets
 - MLDoc  (Not provided. Refer to ./buckets/readme.md)

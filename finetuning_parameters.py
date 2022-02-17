@@ -5,7 +5,7 @@ import argparse
 
 def get_args():
     ROOT_DIRECTORY = "./"
-    RAW_DATA_DIRECTORY = join(ROOT_DIRECTORY, "data/")
+    RAW_DATA_DIRECTORY = join(ROOT_DIRECTORY, "data", "download")
     TRAINING_DIRECTORY = join(RAW_DATA_DIRECTORY, "checkpoint_baseline")
 
     parser = argparse.ArgumentParser()
