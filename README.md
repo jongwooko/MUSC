@@ -44,8 +44,8 @@ pip install -r requirements.txt
 - [ ] for MARC dataset,  `bash exps/marc_source_ft.sh`
 - for XNLI dataset,  `bash exps/xnli_source_ft.sh`
 - for PAWSX dataset, `bash exps/pawsx_source_ft.sh`
-- for POS dataset,   `bash exps/pos_source_ft.sh`
-- [ ] for NER dataset,   `bash exps/panx_source_ft.sh`
+- for POS dataset,   `bash exps/pos_source_ft.sh` (Check data_loader/pos/udpos.py line 128)
+- for NER dataset,   `bash exps/ner_source_ft.sh` (Check data_loader/ner/panx.py line 139)
 
 4. Target Fine-tuning (Few-Shot Cross-Lingual Transfer, FS-XLT)
 

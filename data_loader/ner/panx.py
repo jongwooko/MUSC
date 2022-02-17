@@ -8,7 +8,7 @@ import os
 class PANXDataset(MultilingualRawDataset):
     def __init__(self):
         self.name = "panx"
-        self.data_dir = task2datadir[self.name]
+        self.data_dir = "./data/download/panx/"
         # ("english,afrikaans,arabic,bulgarian,bengali,german,greek,spanish,"
         # "estonian,basque,persian,finnish,french,hebrew,hindi,hungarian,"
         # "indonesian,italian,japanese,javanese,georgian,kazakh,korean,"
@@ -76,7 +76,7 @@ class PANXDataset(MultilingualRawDataset):
             for which_split, wsplit in (
                 ("train", "trn"),
                 ("dev", "val"),
-#                 ("test", "tst"),
+                ("test", "tst"),
             ):
                 if which_split == "train":
                     which_split = f"train-{lang}.tsv"
@@ -131,7 +131,11 @@ class PANXDataset(MultilingualRawDataset):
                 sent_vec = line.strip().split("\n")
                 token_tag_vec = [wt.strip().split("\t") for wt in sent_vec]
                 if update_label_list:
-                    for _, tag in token_tag_vec:
-                        self.label_list.append(tag)
+                    if which_split == "trn" or which_split == "val":
+                        for _, tag in token_tag_vec:
+                            self.label_list.append(tag)
+                    else:
+                        for _ in token_tag_vec:
+                            self.label_list.append("X") # Check
                 sentence_egs.append((language, which_split, token_tag_vec,))
         return sentence_egs

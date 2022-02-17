@@ -125,6 +125,6 @@ class UDPOSDataset(MultilingualRawDataset):
                             self.label_list.append(tag)
                     else:
                         for _ in token_tag_vec:
-                            self.label_list.append("") # Check
+                            self.label_list.append("X") # Check
                 sentence_egs.append((language, which_split, token_tag_vec,))
         return sentence_egs
