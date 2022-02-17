@@ -111,10 +111,11 @@ def panx_preprocess(args):
                     idx = items[0].find(':')
                     if idx != -1:
                         token = items[0][idx+1:].strip()
-                        if 'test' in infile:
-                            fout.write(f'{token}\n')
-                        else:
-                            fout.write(f'{token}\t{label}\n')
+                        fout.write(f'{token}\t{label}\n')
+                        # if 'test' in infile:
+                        #     fout.write(f'{token}\n')
+                        # else:
+                        #     fout.write(f'{token}\t{label}\n')
                 else:
                     fout.write('\n')
     if not os.path.exists(args.output_dir):
@@ -247,10 +248,11 @@ def udpos_preprocess(args):
                         for sidx, (sent, tag, _) in enumerate(data[split]):
                             for widx, (w, t) in enumerate(zip(sent, tag)):
                                 newline = '' if (sidx == len(data[split]) - 1) and (widx == len(sent) - 1) else '\n'
-                                if split == 'test':
-                                    fout.write('{}{}'.format(w, newline))
-                                else:
-                                    fout.write('{}\t{}{}'.format(w, t, newline))
+                                fout.write('{}\t{}{}'.format(w, t, newline))
+                                # if split == 'test':
+                                #     fout.write('{}{}'.format(w, newline))
+                                # else:
+                                #     fout.write('{}\t{}{}'.format(w, t, newline))
                             fout.write('\n')
                 elif suffix == 'conll':
                     with open(prefix + '.conll', 'w') as fout:
@@ -302,10 +304,11 @@ def pawsx_preprocess(args):
         with open(outfile, 'w') as fout:
             writer = csv.writer(fout, delimiter='\t')
             for sent1, sent2, label in data:
-                if remove_label:
-                    writer.writerow([sent1, sent2])
-                else:
-                    writer.writerow([sent1, sent2, label])
+                writer.writerow([sent1, sent2, label])
+                # if remove_label:
+                #     writer.writerow([sent1, sent2])
+                # else:
+                #     writer.writerow([sent1, sent2, label])
 
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
@@ -340,10 +343,11 @@ def xnli_preprocess(args):
             with open(outfile, 'w') as fout:
                 writer = csv.writer(fout, delimiter='\t')
                 for (sent1, sent2, label) in pairs:
-                    if split == 'test':
-                        writer.writerow([sent1, sent2])
-                    else:
-                        writer.writerow([sent1, sent2, label])
+                    writer.writerow([sent1, sent2, label])
+                    # if split == 'test':
+                    #     writer.writerow([sent1, sent2])
+                    # else:
+                    #     writer.writerow([sent1, sent2, label])
             print(f'finish preprocess {outfile}')
 
     def _preprocess_train_file(infile, outfile):

@@ -131,11 +131,7 @@ class PANXDataset(MultilingualRawDataset):
                 sent_vec = line.strip().split("\n")
                 token_tag_vec = [wt.strip().split("\t") for wt in sent_vec]
                 if update_label_list:
-                    if which_split == "trn" or which_split == "val":
-                        for _, tag in token_tag_vec:
-                            self.label_list.append(tag)
-                    else:
-                        for _ in token_tag_vec:
-                            self.label_list.append("X") # Check
+                    for _, tag in token_tag_vec:
+                        self.label_list.append(tag)
                 sentence_egs.append((language, which_split, token_tag_vec,))
         return sentence_egs

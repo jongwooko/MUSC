@@ -5,7 +5,7 @@ import argparse
 
 def get_args():
     ROOT_DIRECTORY = "./"
-    RAW_DATA_DIRECTORY = join(ROOT_DIRECTORY, "data/")
+    RAW_DATA_DIRECTORY = join(ROOT_DIRECTORY, "data", "download")
     TRAINING_DIRECTORY = join(RAW_DATA_DIRECTORY, "checkpoint_adapt")
 
     parser = argparse.ArgumentParser()
@@ -17,9 +17,9 @@ def get_args():
 
     parser.add_argument("--dataset_name", type=str, default="mldoc")
     parser.add_argument("--max_seq_len", type=int, default=128)
-    parser.add_argument("--adapt_trn_languages", type=str, default="english")
 
     # fast adaptation setup
+    parser.add_argument("--adapt_trn_languages", type=str, default="english")
     parser.add_argument("--adapt_epochs", type=int, default=5)
     parser.add_argument("--adapt_batch_size", type=int, default=32)
     parser.add_argument("--adapt_num_shots", type=int, default=5)

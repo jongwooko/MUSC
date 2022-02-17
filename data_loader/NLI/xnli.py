@@ -122,8 +122,8 @@ class XNLIDataset(MultilingualRawDataset):
                 if len(line) == 3:
                     text_a, text_b, label = line[0], line[1], line[2]
                     assert label in self.get_labels(), f"{label}, {input_file}"
-                elif len(line) == 2:
-                    text_a, text_b, label = line[0], line[1], None
+                # elif len(line) == 2:
+                #     text_a, text_b, label = line[0], line[1], None
                 else:
                     raise ValueError
                 sentence_pair_egs.append(

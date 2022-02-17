@@ -94,7 +94,9 @@ class BaseTrainer(object):
                     )
         assert len(all_golds_tagging) == len(all_preds_tagging)
         eval_fn = eval(metric_name)
+        # eval_fn = f1_score_tagging
         eval_res = eval_fn(all_preds_tagging, all_golds_tagging)
+
         model.train()
         return eval_res, metric_name
 
