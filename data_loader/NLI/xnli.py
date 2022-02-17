@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 from ..common import (
     SentencePairExample,
     MultilingualRawDataset,
@@ -95,8 +96,8 @@ class XNLIDataset(MultilingualRawDataset):
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
-                label = line[-1]
-                text_a, text_b = line[0], line[1]
+                assert len(line) == 3
+                text_a, text_b, label = line[0], line[1], line[2]
                 assert label in self.get_labels(), f"{label}, {input_file}"
                 sentence_pair_egs.append(
                     (
@@ -115,42 +116,27 @@ class XNLIDataset(MultilingualRawDataset):
 
     def xnli_parse(self, input_file, which_split, lang_abbre):
         sentence_pair_egs = []
-        if which_split == 'val':
-            with open(input_file, "r") as f:
-                for idx, line in enumerate(f):
-                    line = line.strip().split("\t")
-                    label = line[-1]
-                    text_a, text_b = line[0], line[1]
-                    sentence_pair_egs.append(
-                        (
-                            abbre2language[lang_abbre],
-                            which_split,
-                            SentencePairExample(
-                                uid=f"{abbre2language[lang_abbre]}-{idx}-{which_split}",
-                                text_a=text_a,
-                                text_b=text_b,
-                                label=label,
-                            ),
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = line.strip().split("\t")
+                if len(line) == 3:
+                    text_a, text_b, label = line[0], line[1], line[2]
+                    assert label in self.get_labels(), f"{label}, {input_file}"
+                elif len(line) == 2:
+                    text_a, text_b, label = line[0], line[1], None
+                else:
+                    raise ValueError
+                sentence_pair_egs.append(
+                    (
+                        abbre2language[lang_abbre],
+                        which_split,
+                        SentencePairExample(
+                            uid=f"{abbre2language[lang_abbre]}-{idx}-{which_split}",
+                            text_a=text_a,
+                            text_b=text_b,
+                            label=label,
                         ),
-                    )
-        elif which_split == 'tst':
-            with open(input_file, "r") as f:
-                for idx, line in enumerate(f):
-                    line = line.strip().split("\t")
-                    text_a, text_b = line[0], line[1]
-                    sentence_pair_egs.append(
-                        (
-                            abbre2language[lang_abbre],
-                            which_split,
-                            SentencePairExample(
-                                uid=f"{abbre2language[lang_abbre]}-{idx}-{which_split}",
-                                text_a=text_a,
-                                text_b=text_b,
-                                label=None,
-                            ),
-                        ),
-                    )
-        else:
-            raise ValueError
+                    ),
+                )
         print(len(sentence_pair_egs), input_file)
         return sentence_pair_egs

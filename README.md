@@ -43,7 +43,7 @@ pip install -r requirements.txt
 - [ ] for MLDoc dataset, `bash exps/mldoc_source_ft.sh`
 - [ ] for MARC dataset,  `bash exps/marc_source_ft.sh`
 - for XNLI dataset,  `bash exps/xnli_source_ft.sh`
-- [ ] for PAWSX dataset, `bash exps/pawsx_source_ft.sh`
+- for PAWSX dataset, `bash exps/pawsx_source_ft.sh`
 - [ ] for POS dataset,   `bash exps/pos_source_ft.sh`
 - [ ] for NER dataset,   `bash exps/panx_source_ft.sh`
 

@@ -28,7 +28,7 @@ class PAWSXDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        pawsx_ = "./data/pawsx/"
+        pawsx_ = "./data/download/pawsx/"
         entries = []
         for lang in self.lang_abbres:
             for which_split, wsplit in (
@@ -36,13 +36,7 @@ class PAWSXDataset(MultilingualRawDataset):
                 ("dev", "val"),
                 ("test", "tst"),
             ):
-                if which_split == "train":
-                    which_split = f"train.tsv"
-                elif which_split == "dev":
-                    which_split = f"dev_2k.tsv"
-                elif which_split == "test":
-                    which_split = f"test_2k.tsv"
-                file_ = os.path.join(pawsx_, lang, which_split)
+                file_ = os.path.join(pawsx_, f"{which_split}-{lang}.tsv")
                 if not os.path.exists(file_):
                     print(f"[INFO]: skip {lang} {wsplit}: not such file")
                     continue
@@ -79,12 +73,14 @@ class PAWSXDataset(MultilingualRawDataset):
         language = abbre2language[lang]
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
-                if idx == 0:
-                    continue
                 line = line.strip().split("\t")
-                assert len(line) == 4
-                text_a, text_b, label = line[1], line[2], line[-1]
-                assert label in self.get_labels(), f"{label}, {input_file}"
+                if len(line) == 3:
+                    text_a, text_b, label = line[0], line[1], line[2]
+                    assert label in self.get_labels(), f"{label}, {input_file}"
+                elif len(line) == 2:
+                    text_a, text_b, label = line[0], line[1], None
+                else:
+                    raise ValueError
                 portion_identifier = -1
                 sentence_egs.append(
                     (
