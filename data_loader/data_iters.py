@@ -7,24 +7,26 @@ import os
 class TaggingDataIter(object):
     def __init__(self, raw_dataset, model, tokenizer, max_seq_len, do_cache=True):
         self.raw_dataset = raw_dataset
-        self.trn_egs = self.wrap_iter(
-            task=raw_dataset.name,
-            model=model,
-            which_split="trn",
-            tagged_sents=raw_dataset.trn_egs,
-            tokenizer=tokenizer,
-            max_seq_len=max_seq_len,
-            do_cache=do_cache,
-        )
-        self.val_egs = self.wrap_iter(
-            task=raw_dataset.name,
-            model=model,
-            which_split="val",
-            tagged_sents=raw_dataset.val_egs,
-            tokenizer=tokenizer,
-            max_seq_len=max_seq_len,
-            do_cache=do_cache,
-        )
+        if raw_dataset.trn_egs is not None:
+            self.trn_egs = self.wrap_iter(
+                task=raw_dataset.name,
+                model=model,
+                which_split="trn",
+                tagged_sents=raw_dataset.trn_egs,
+                tokenizer=tokenizer,
+                max_seq_len=max_seq_len,
+                do_cache=do_cache,
+            )
+        if raw_dataset.val_egs is not None:
+            self.val_egs = self.wrap_iter(
+                task=raw_dataset.name,
+                model=model,
+                which_split="val",
+                tagged_sents=raw_dataset.val_egs,
+                tokenizer=tokenizer,
+                max_seq_len=max_seq_len,
+                do_cache=do_cache,
+            )
         if raw_dataset.tst_egs is not None:
             self.tst_egs = self.wrap_iter(
                 task=raw_dataset.name,
@@ -115,24 +117,26 @@ class _TaggingIter(torch.utils.data.Dataset):
 class SeqClsDataIter(object):
     def __init__(self, raw_dataset, model, tokenizer, max_seq_len, do_cache=True):
         self.raw_dataset = raw_dataset
-        self.trn_egs = self.wrap_iter(
-            task=raw_dataset.name,
-            model=model,
-            which_split="trn",
-            egs=raw_dataset.trn_egs,
-            tokenizer=tokenizer,
-            max_seq_len=max_seq_len,
-            do_cache=do_cache,
-        )
-        self.val_egs = self.wrap_iter(
-            task=raw_dataset.name,
-            model=model,
-            which_split="val",
-            egs=raw_dataset.val_egs,
-            tokenizer=tokenizer,
-            max_seq_len=max_seq_len,
-            do_cache=do_cache,
-        )
+        if raw_dataset.trn_egs is not None:
+            self.trn_egs = self.wrap_iter(
+                task=raw_dataset.name,
+                model=model,
+                which_split="trn",
+                egs=raw_dataset.trn_egs,
+                tokenizer=tokenizer,
+                max_seq_len=max_seq_len,
+                do_cache=do_cache,
+            )
+        if raw_dataset.val_egs is not None:
+            self.val_egs = self.wrap_iter(
+                task=raw_dataset.name,
+                model=model,
+                which_split="val",
+                egs=raw_dataset.val_egs,
+                tokenizer=tokenizer,
+                max_seq_len=max_seq_len,
+                do_cache=do_cache,
+            )
         if raw_dataset.tst_egs is not None:
             self.tst_egs = self.wrap_iter(
                 task=raw_dataset.name,

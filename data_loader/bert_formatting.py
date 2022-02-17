@@ -137,7 +137,6 @@ def tagging_example_to_feature(which_split, tagged_sents, tokenizer, t2i, msl):
         bert_inp_ids = tokenizer.convert_tokens_to_ids(sent_pieces)
         bert_inp_mask = [1] * len(bert_inp_ids)
         tags_ids = [t2i[tag] for tag in sent_piece_tags]
-
         assert len(sent_pieces) == len(sent_if_tgt) == len(tags_ids)
 
         while len(bert_inp_ids) < msl:

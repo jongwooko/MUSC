@@ -7,7 +7,7 @@ import os
 class UDPOSDataset(MultilingualRawDataset):
     def __init__(self):
         self.name = "udpos"
-        self.data_dir = task2datadir[self.name]
+        self.data_dir = "./data/download/udpos/"
         # ("english,afrikaans,arabic,bulgarian,german,greek,spanish,"
         # "estonian,basque,persian,finnish,french,hebrew,hindi,hungarian,"
         # "indonesian,italian,japanese,korean,"
@@ -110,6 +110,7 @@ class UDPOSDataset(MultilingualRawDataset):
             self.contents[language] = _dataset
 
     def udpos_parse(self, lang, input_file, which_split, update_label_list=True):
+        print (input_file)
         # or just use nltk
         sentence_egs = []
         language = abbre2language[lang]
@@ -119,7 +120,11 @@ class UDPOSDataset(MultilingualRawDataset):
                 sent_vec = line.strip().split("\n")
                 token_tag_vec = [wt.strip().split("\t") for wt in sent_vec]
                 if update_label_list:
-                    for _, tag in token_tag_vec:
-                        self.label_list.append(tag)
+                    if which_split == "trn" or which_split == "val":
+                        for _, tag in token_tag_vec:
+                            self.label_list.append(tag)
+                    else:
+                        for _ in token_tag_vec:
+                            self.label_list.append("") # Check
                 sentence_egs.append((language, which_split, token_tag_vec,))
         return sentence_egs
