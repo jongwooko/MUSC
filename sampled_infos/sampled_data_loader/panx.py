@@ -15,7 +15,8 @@ class SampledPANXDataset(PANXDataset):
         self.update_egs()
 
     def update_egs(self):
-        sampled_panx_ = "./sampled_infos/sampled_data/panx/"
+        # sampled_panx_ = "./sampled_infos/sampled_data/panx/"
+        sampled_panx_ = "./buckets/panx/"
         entries = []
         for lang in self.lang_abbres:
             if lang == "en":

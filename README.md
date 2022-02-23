@@ -52,8 +52,8 @@ pip install -r requirements.txt
 
 [ ] Convert target samples into .pkl format (./buckets -> ./sampled_infos/sampled_data)
 [ ] Chinese unicode
-[ ] How to convert POS/NER datasets?
-[ ] adapt_training
+- for POS dataset,   `bash exps/pos_target_ft.sh` (Check detail)
+- for NER dataset,   `bash exps/ner_target_ft.sh` (Check detail)
 
 5. Test
 

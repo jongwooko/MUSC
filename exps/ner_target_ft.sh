@@ -6,7 +6,7 @@ CUDA_VISIBLE_DEVICES=0
 # --group_index: 0~39
 ######################################################
 
-python adapt_training.py --dataset_name pawsx \
+python adapt_training.py --dataset_name panx \
                          --adapt_trn_languages german \
                          --adapt_epochs 50 \
                          --adapt_num_shots 1 \
@@ -18,7 +18,7 @@ python adapt_training.py --dataset_name pawsx \
                          --train_pooler False \
                          --reinit_classifier False \
                          --load_ckpt True \
-                         --ckpt_path "./checkpoint_baseline/pawsx/debug/1645085231_model_task-pawsx_flr-1.0E-05_ftbs-32_ftepcs-10_sd-3_trnfast-False_evalevery-50_tlang-en_vlang-en/state_dicts/last_state.pt" \
+                         --ckpt_path "./checkpoint_baseline/panx/debug/1645106200_model_task-panx_flr-1.0E-05_ftbs-32_ftepcs-10_sd-3_trnfast-False_evalevery-50_tlang-en_vlang-en/state_dicts/last_state.pt" \
                          --early_stop True \
                          --early_stop_patience 10 \
                          --override False \

@@ -75,7 +75,9 @@ def init_task(conf):
             ckpt = torch.load(f, map_location=lambda storage, loc: storage)
             # bypass (ckpt["best_state_dict"]["bert.embeddings.position_ids"])
             # version mismatch
-            model.load_state_dict(ckpt["best_state_dict"], strict=False)
+
+            # model.load_state_dict(ckpt["best_state_dict"], strict=False)
+            model.load_state_dict(ckpt, strict=True)
 
     exp_languages = sorted(list(set(conf.adapt_trn_languages)))
     data_iter_cls = data_configs.task2dataiter[conf.dataset_name]
