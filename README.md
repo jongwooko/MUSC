@@ -37,6 +37,7 @@ bash scripts/download_data.sh
 
 3. Source Fine-tuning (Zero-Shot Cross-Lingual Transfer, ZS-XLT)
 ```
+source activate fsxlt
 pip install -r requirements.txt
 ```
 
@@ -49,7 +50,13 @@ pip install -r requirements.txt
 
 4. Target Fine-tuning (Few-Shot Cross-Lingual Transfer, FS-XLT)
 
+[ ] Convert target samples into .pkl format (./buckets -> ./sampled_infos/sampled_data)
+[ ] Chinese unicode
+[ ] How to convert POS/NER datasets?
+[ ] adapt_training
+
 5. Test
+
 ## Related to the target datasets
 - MLDoc  (Not provided. Refer to ./buckets/readme.md)
 - MARC   (Refer to ./buckets/marc)
