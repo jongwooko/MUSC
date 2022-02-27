@@ -80,15 +80,14 @@ class BertForSequenceClassification(BertPreTrainedModel):
         logits = self.classifier(sequence_output)
         outputs = (logits,) + outputs[2:]
         if labels is not None:
-            if labels is not None:
-                if self.num_labels == 1:
-                    #  We are doing regression
-                    loss_fct = MSELoss()
-                    loss = loss_fct(logits.view(-1), labels.view(-1))
-                else:
-                    loss_fct = CrossEntropyLoss()
-                    loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-                outputs = (loss,) + outputs
+            if self.num_labels == 1:
+                #  We are doing regression
+                loss_fct = MSELoss()
+                loss = loss_fct(logits.view(-1), labels.view(-1))
+            else:
+                loss_fct = CrossEntropyLoss()
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            outputs = (loss,) + outputs
         return outputs  # (loss), logits, (hidden_states), (attentions)
     
     def get_last_hidden_from_embedding_output(
@@ -99,8 +98,12 @@ class BertForSequenceClassification(BertPreTrainedModel):
     ):
         outputs = self.bert.get_bert_output(embedding_output, attention_mask=attention_mask)
         sequence_output = outputs[0]
-        logits = self.classifier(sequence_output)
-        return sequence_output, logits
+        
+        # sequence classifiers only use [CLS] tokens for classification task.
+        # Previous research (A closer look at few-shot crosslingual transfer: the choices of shots matters)
+        # show that the training FC+Pooler performs the best among the for various number of shots. 
+        first_token_tensor = sequence_output[:, 0]
+        return first_token_tensor
     
     def get_last_hidden(
         self,
@@ -120,8 +123,8 @@ class BertForSequenceClassification(BertPreTrainedModel):
             inputs_embeds=inputs_embeds
         )
         sequence_output = outputs[0]
-        logits = self.classifier(sequence_output)
-        return sequence_output, logits
+        first_token_tensor = sequence_output[:, 0]
+        return first_token_tensor
 
 class LinearPredictor(BertPreTrainedModel):
     def __init__(self, bert_config, out_dim, dropout):
@@ -194,7 +197,8 @@ class BertForSequenceTagging(LinearPredictor):
         
         bert_out = bert_out[0]
         bert_out = self.dropout(bert_out)
-        bert_out = bert_out[if_tgts]
+        bert_out = self.classifier(bert_out)
+        logits = bert_out[if_tgts]
         return (
             logits,
             torch.argmax(bert_out, dim=-1, keepdim=False),
@@ -212,13 +216,7 @@ class BertForSequenceTagging(LinearPredictor):
             attention_mask=attention_mask
         )
         bert_out = bert_out[0]
-        bert_out = self.dropout(bert_out)
-        bert_out = bert_out[if_tgts]
-        return (
-            logits,
-            torch.argmax(bert_out, dim=-1, keepdim=False),
-            bert_out,
-        )
+        return bert_out
     
     def get_last_hidden(
         self,
@@ -239,11 +237,4 @@ class BertForSequenceTagging(LinearPredictor):
         )
         
         bert_out = bert_out[0]
-        bert_out = self.dropout(bert_out)
-        bert_out = self.classifier(bert_out)
-        logits = bert_out[if_tgts]
-        return (
-            logits,
-            torch.argmax(bert_out, dim=-1, keepdim=False),
-            bert_out,
-        )
+        return bert_out
