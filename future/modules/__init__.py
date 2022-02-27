@@ -1,9 +1,6 @@
 from collections import namedtuple
-from .nets import (
-    BertForSequenceClassification,
-    BertForMultipleChoice,
-    BertTokenizer,
-    BertForSequenceTagging,
+from .nets import (BertForSequenceClassification, BertForMultipleChoice,
+                   BertTokenizer, BertForSequenceTagging,
 )
 
 from .to_device import seqcls_batch_to_device, _Seqcls_task_container

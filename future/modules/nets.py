@@ -83,12 +83,12 @@ class BertForSequenceClassification(BertPreTrainedModel):
             if labels is not None:
                 if self.num_labels == 1:
                     #  We are doing regression
-                loss_fct = MSELoss()
-                loss = loss_fct(logits.view(-1), labels.view(-1))
-            else:
-                loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-            outputs = (loss,) + outputs
+                    loss_fct = MSELoss()
+                    loss = loss_fct(logits.view(-1), labels.view(-1))
+                else:
+                    loss_fct = CrossEntropyLoss()
+                    loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+                outputs = (loss,) + outputs
         return outputs  # (loss), logits, (hidden_states), (attentions)
     
     def get_last_hidden_from_embedding_output(
