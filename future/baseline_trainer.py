@@ -20,7 +20,8 @@ class BaselineTuner(BaseTrainer):
         self.model_ptl = conf.ptl
 
     def _init_model_opt(self, model):
-        print (model)
+#         print (model)
+        print ("Initialize optimizer and Model")
         model = self._parallel_to_device(model)
         opt = torch.optim.Adam(model.parameters(), lr=self.conf.finetune_lr)
         opt.zero_grad()
