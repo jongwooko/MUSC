@@ -129,7 +129,7 @@ class BaselineTuner(BaseTrainer):
     def plain_eval(self, model, adapt_loaders, metric_name):
         all_scores = defaultdict(list)
         val_scores = []
-        for val_language in self.conf.trn_languages:
+        for val_language in self.conf.eval_languages: # trn 
             val_loaders = adapt_loaders[val_language]
             # for split_ in ["val_egs"]:
             for split_ in ["val_egs", "tst_egs"]:
@@ -140,7 +140,7 @@ class BaselineTuner(BaseTrainer):
                 all_scores[val_language].append((split_, eval_res))
                 if split_ == "val_egs":
                     val_scores.append(eval_res)
-        assert len(val_scores) == len(self.conf.trn_languages)
+        assert len(val_scores) == len(self.conf.eval_languages) # trn
         return (np.mean(val_scores), all_scores)
 
     def plain_eval_tagging(self, model, adapt_loaders, metric_name):
