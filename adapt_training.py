@@ -70,14 +70,14 @@ def init_task(conf):
             conf.model, num_labels=raw_dataset.num_labels,
         )
 
-    if conf.load_ckpt:
+    if conf.load_ckpt: # Check
         with open(conf.ckpt_path, "rb") as f:
             ckpt = torch.load(f, map_location=lambda storage, loc: storage)
             # bypass (ckpt["best_state_dict"]["bert.embeddings.position_ids"])
             # version mismatch
 
-            # model.load_state_dict(ckpt["best_state_dict"], strict=False)
-            model.load_state_dict(ckpt, strict=True)
+            model.load_state_dict(ckpt, strict=False)
+            # model.load_state_dict(ckpt, strict=True)
 
     exp_languages = sorted(list(set(conf.adapt_trn_languages)))
     data_iter_cls = data_configs.task2dataiter[conf.dataset_name]
