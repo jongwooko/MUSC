@@ -15,10 +15,6 @@ import torch
 import random
 import os
 
-from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
-                              TensorDataset)
-from torch.utils.data.distributed import DistributedSampler
-from apex.parallel import DistributedDataParallel as DDP
 
 # config = dict(
 #     ptl="bert",
@@ -46,26 +42,6 @@ from apex.parallel import DistributedDataParallel as DDP
 
 
 def init_task(conf):
-    
-    assert (torch.cuda.is_available())
-    if conf.local_rank == -1:
-        device = torch.device("cuda:{}".format(conf.world[0]))
-        conf.rank = 0
-    else:
-        device_count = torch.cuda.device_count()
-        conf.rank = int(os.getenv("RANK", "0"))
-        conf.world_size = int(os.getenv("WORLD_SIZE", "1"))
-
-        init_method = "env://"
-        torch.cuda.set_device(conf.local_rank)
-        device = torch.device("cuda", conf.local_rank)
-        print ("device_id: %s" % conf.local_rank)
-        print ("device_count %s, rank: %s, world_size: %s" % (device_count, conf.rank, conf.world_size))
-        print (init_method)
-
-        torch.distributed.init_process_group(backend="nccl", world_size=conf.world_size,
-                                             rank=conf.rank, init_method=init_method)
-    
     raw_dataset = task_configs.task2dataset[conf.dataset_name]()
     metric_name = raw_dataset.metrics[0]
     classes = ptl2classes[conf.ptl]
@@ -100,14 +76,6 @@ def init_task(conf):
             max_seq_len=conf.max_seq_len,
         )
     collocate_batch_fn = task2collocate_fn[conf.dataset_name]
-    
-    # apex
-    model.to(device)
-    if conf.local_rank != -1:
-        model = DDP(model, message_size=10000000,
-                    gradient_predivide_factor=torch.distributed.get_world_size(),
-                    delay_allreduce=True)
-    
     return (model, tokenizer, data_iter, metric_name, collocate_batch_fn)
 
 
@@ -137,7 +105,6 @@ def main(conf):
             infer_batch_size=conf.inference_batch_size,
             language=language,
             language_dataset=language_dataset,
-            distributed=conf.local_rank!=-1
         )
 
     hooks = init_hooks(conf, metric_name)
@@ -197,7 +164,7 @@ def init_config(conf):
     torch.cuda.manual_seed(conf.manual_seed)
 
     assert torch.cuda.is_available()
-#     torch.cuda.set_device(conf.world[0])
+    torch.cuda.set_device(conf.world[0])
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True
     torch.backends.cudnn.deterministic = True

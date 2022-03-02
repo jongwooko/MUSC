@@ -38,6 +38,8 @@ def get_args():
     parser.add_argument("--train_fast", default=True, type=str2bool)
     parser.add_argument("--track_time", default=True, type=str2bool)
     parser.add_argument("--world", default="0", type=str)
+    parser.add_argument("--local_rank", type=int, default=-1,
+                        help="lcoal_rank for distributed training on gpus")
 
     return parser
 

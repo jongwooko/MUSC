@@ -7,6 +7,7 @@ from .base import BaseTrainer
 from .hooks.base_hook import HookContainer
 from .hooks import EvaluationRecorder
 from torch.utils.data import RandomSampler
+from torch.utils.data.distributed import DistributedSampler
 from collections import defaultdict, Counter
 from tqdm import tqdm
 
@@ -21,7 +22,7 @@ class BaselineTuner(BaseTrainer):
 
     def _init_model_opt(self, model):
         print ("Initialize Optimizer and Model")
-        model = self._parallel_to_device(model)
+#         model = self._parallel_to_device(model)
         opt = torch.optim.Adam(model.parameters(), lr=self.conf.finetune_lr)
         opt.zero_grad()
         model.zero_grad()
@@ -75,7 +76,7 @@ class BaselineTuner(BaseTrainer):
             trn_iters = []
             for language in self.conf.trn_languages:
                 egs = adapt_loaders[language].trn_egs
-                assert isinstance(egs.sampler, RandomSampler)
+                assert isinstance(egs.sampler, RandomSampler) or isinstance(egs.sampler, DistributedSampler)
                 trn_iters.append(iter(egs))
 
             batches_per_epoch = max(len(ti) for ti in trn_iters)
@@ -101,7 +102,7 @@ class BaselineTuner(BaseTrainer):
                     f" train batch  @  {batch_index}, epoch @ {epoch_index}"
                     f" global batch @ {self._batch_step}"
                 )
-                if self._batch_step % self.conf.eval_every_batch == 0:
+                if self._batch_step % self.conf.eval_every_batch == 0 and self.conf.rank==0:
                     if self.conf.dataset_name in ["conll2003", "panx", "udpos"]:
                         eval_score, all_scores = self.plain_eval_tagging(
                             self.model, adapt_loaders, metric_name=metric_name

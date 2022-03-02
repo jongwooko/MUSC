@@ -52,7 +52,7 @@ class EvaluationRecorder(Hook):
             self.best_state = {
                 "which_step": self.best_step,
                 "validation_score": self.best_score,
-                "best_state_dict": deepcopy(self.model).cpu(),
+                "best_state_dict": deepcopy(getattr(self.model, "module", self.model)).cpu(),
                 "best_all_scores": self.best_all_scores,
             }
         else:
