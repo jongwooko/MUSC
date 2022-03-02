@@ -37,7 +37,7 @@ class SampledPAWSXDataset(PAWSXDataset):
                     assert language in eg.uid
                 trn_egs.extend(egs)
             print(
-                f"[INFO] {self.name} overrides trn_egs for {language}, len: {len(trn_egs)}"
+                f"[INFO] {self.name} overrides trn_egs for {language}, len (# of classes): {len(trn_egs)}"
             )
             assert self.contents[language].trn_egs is None
             self.contents[language].trn_egs = trn_egs
@@ -50,6 +50,6 @@ class SampledPAWSXDataset(PAWSXDataset):
             with open(val_where_, "rb") as f:
                 left_dev = pickle.load(f)
                 for gold_label, egs in left_dev.items():
-                    print(gold_label, len(egs))
+                    print("Validation set - clsss {}, num {}".format(gold_label, len(egs)))
                     val_egs.extend(egs)
             self.contents[language].val_egs = val_egs

@@ -13,7 +13,7 @@ def get_args():
 
     parser.add_argument("--experiment", type=str, default="debug")
     parser.add_argument("--ptl", type=str, default="bert")
-    parser.add_argument("--model", type=str, default="bert-base-uncased")
+    parser.add_argument("--model", type=str, default="bert-base-multilingual-cased")
 
     parser.add_argument("--dataset_name", type=str, default="mldoc")
     parser.add_argument("--max_seq_len", type=int, default=128)
