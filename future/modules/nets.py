@@ -76,8 +76,10 @@ class BertForSequenceClassification(BertPreTrainedModel):
         labels=None
     ):
         outputs = self.bert.get_bert_output(embedding_output, attention_mask=attention_mask)
-        sequence_output = outputs[0]
-        logits = self.classifier(sequence_output)
+        pooled_output = outputs[1]
+        
+        pooled_output = self.dropout(pooled_output)
+        logits = self.classifier(pooled_output)
         outputs = (logits,) + outputs[2:]
         if labels is not None:
             if self.num_labels == 1:
@@ -125,6 +127,17 @@ class BertForSequenceClassification(BertPreTrainedModel):
         sequence_output = outputs[0]
         first_token_tensor = sequence_output[:, 0]
         return first_token_tensor
+    
+    def get_logits_from_last_hidden(
+        self,
+        first_token_tensor,
+    ):
+        pooled_output = self.bert.pooler.dense(first_token_tensor)
+        pooled_output = self.bert.pooler.activation(pooled_output)
+        pooled_output = self.dropout(pooled_output)
+        logits = self.classifier(pooled_output)
+        return logits
+        
 
 class LinearPredictor(BertPreTrainedModel):
     def __init__(self, bert_config, out_dim, dropout):
@@ -238,3 +251,18 @@ class BertForSequenceTagging(LinearPredictor):
         
         bert_out = bert_out[0]
         return bert_out
+    
+    def get_logits_from_last_hidden(
+        self,
+        last_hidden,
+        labels=None,
+        if_tgts=None,
+    ):
+        bert_out = self.dropout(last_hidden)
+        bert_out = self.classifier(bert_out)
+        logits = bert_out[if_tgts]
+        return (
+            logits,
+            torch.argmax(bert_out, dim=-1, keepdim=False),
+            bert_out,
+        )
