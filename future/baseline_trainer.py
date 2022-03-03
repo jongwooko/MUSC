@@ -102,7 +102,8 @@ class BaselineTuner(BaseTrainer):
                     f" train batch  @  {batch_index}, epoch @ {epoch_index}"
                     f" global batch @ {self._batch_step}"
                 )
-                if self._batch_step % self.conf.eval_every_batch == 0 and self.conf.rank==0:
+                if self._batch_step % self.conf.eval_every_batch == 0 and \
+                    (self.conf.rank==0 or self.conf.local_rank == -1):
                     if self.conf.dataset_name in ["conll2003", "panx", "udpos"]:
                         eval_score, all_scores = self.plain_eval_tagging(
                             self.model, adapt_loaders, metric_name=metric_name
