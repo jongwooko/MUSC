@@ -7,11 +7,6 @@
 - A Closer Look at Few-Shot Crosslingual Transfer: The Choice of Shots Matters (https://github.com/fsxlt/code)
 - https://github.com/fsxlt/buckets
 
-## TODO
-- [ ] Solving Errors for test dataset do not have tagging.
-- [ ] Adapt Training to target languages.
-- [ ] Code works on all datasets. (PAWSX, XNLI)
-
 ## How to start (TODO: Jaehoon)
 All steps start from the root directory (i.e., FSXLT folder).
 
@@ -43,17 +38,17 @@ pip install -r requirements.txt
 
 - [ ] for MLDoc dataset, `bash exps/mldoc_source_ft.sh`
 - [ ] for MARC dataset,  `bash exps/marc_source_ft.sh`
-- for XNLI dataset,  `bash exps/xnli_source_ft.sh`
-- for PAWSX dataset, `bash exps/pawsx_source_ft.sh`
-- for POS dataset,   `bash exps/pos_source_ft.sh`
-- for NER dataset,   `bash exps/ner_source_ft.sh`
+- [X] for XNLI dataset,  `bash exps/xnli_source_ft.sh`
+- [X] for PAWSX dataset, `bash exps/pawsx_source_ft.sh`
+- [X] for POS dataset,   `bash exps/pos_source_ft.sh`
+- [X] for NER dataset,   `bash exps/ner_source_ft.sh`
 
 4. Target Fine-tuning (Few-Shot Cross-Lingual Transfer, FS-XLT)
 
-[ ] Convert target samples into .pkl format (./buckets -> ./sampled_infos/sampled_data)
-[ ] Chinese unicode
-- for POS dataset,   `bash exps/pos_target_ft.sh` (Check detail)
-- for NER dataset,   `bash exps/ner_target_ft.sh` (Check detail)
+- [ ] Convert target samples into .pkl format (./buckets -> ./sampled_infos/sampled_data)
+- [ ] Chinese unicode
+- [X] for POS dataset,   `bash exps/pos_target_ft.sh` (Check detail)
+- [X] for NER dataset,   `bash exps/ner_target_ft.sh` (Check detail)
 
 5. Test
 
