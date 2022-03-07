@@ -76,8 +76,9 @@ def init_task(conf):
             # bypass (ckpt["best_state_dict"]["bert.embeddings.position_ids"])
             # version mismatch
 
-            model.load_state_dict(ckpt, strict=False)
-            # model.load_state_dict(ckpt, strict=True)
+            # model.load_state_dict(ckpt, strict=False)
+            # ckpt = {k[7:]: v for k, v in ckpt.items()}
+            model.load_state_dict(ckpt["best_state_dict"], strict=True)
 
     exp_languages = sorted(list(set(conf.adapt_trn_languages)))
     data_iter_cls = data_configs.task2dataiter[conf.dataset_name]
@@ -116,6 +117,15 @@ def init_hooks(conf, metric_name):
 
 def confirm_model(conf, model):
     # reinit classifier if necessary
+    if conf.reinit_pooler:
+        for name, param in model.named_parameters():
+            if "bert.pooler.dense.weight" in name:
+                param.data.normal_(mean=0.0, std=0.02)
+                print("[INFO] reset pooler weights.")
+            if "bert.pooler.dense.bias" in name:
+                print("[INFO] reset pooler bias.")
+                param.data.zero_()
+
     if conf.reinit_classifier:
         for name, param in model.named_parameters():
             if "classifier.weight" in name:

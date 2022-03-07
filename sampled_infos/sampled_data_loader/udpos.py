@@ -16,7 +16,6 @@ class SampledUDPOSDataset(UDPOSDataset):
 
     def update_egs(self):
         sampled_panx_ = "./sampled_infos/sampled_data/udpos/"
-        sampled_panx_ = "./buckets/udpos/"
         entries = []
         for lang in self.lang_abbres:
             if lang == "en":

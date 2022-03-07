@@ -37,7 +37,7 @@ class SampledXNLIDataset(XNLIDataset):
                     assert language in eg.uid
                 trn_egs.extend(egs)
             print(
-                f"[INFO] {self.name} overrides trn_egs for {language}, len (# of classes): {len(trn_egs)}"
+                f"[INFO] {self.name} overrides trn_egs for {language}, len: {len(trn_egs)}"
             )
             assert self.contents[language].trn_egs is None
             self.contents[language].trn_egs = trn_egs

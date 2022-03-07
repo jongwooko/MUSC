@@ -37,7 +37,7 @@ class BaseTrainer(object):
         return model(**kwargs)
 
     def _infer_one_loader(
-        self, model, loader, collocate_batch_fn, metric_name="accuracy", device=None
+        self, model, loader, collocate_batch_fn, metric_name="accuracy", device=None, # transformation_vector=None
     ):
         assert isinstance(loader.sampler, SequentialSampler)
         try:
@@ -53,7 +53,11 @@ class BaseTrainer(object):
         for batched in loader:
             batched, golds, *_ = collocate_batch_fn(batched, device=device)
             with torch.no_grad():
-                logits, *_ = self._model_forward(model, **batched)
+                # logits, *_ = self._model_forward(model, **batched)
+                last_hiddens = model.get_last_hidden(**batched)
+                # last_hiddens = torch.where(last_hiddens > 0, last_hiddens, torch.tensor(0.).cuda())
+                # last_hiddens = torch.pow(last_hiddens, 0.5)
+                logits = model.get_logits_from_last_hidden(last_hiddens)
                 preds = torch.argmax(logits, dim=-1)
             all_golds.extend(golds.tolist())
             all_preds.extend(preds.tolist())
