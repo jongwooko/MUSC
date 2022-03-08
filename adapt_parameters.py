@@ -54,6 +54,10 @@ def get_args():
     parser.add_argument("--train_fast", default=True, type=str2bool)
     parser.add_argument("--track_time", default=True, type=str2bool)
     parser.add_argument("--world", default="0", type=str)
+    
+    # methods
+    parser.add_argument("--use_fl", action="store_true",
+                        help="Whether to use free lunch")
 
     # parse conf.
     conf = parser.parse_args()

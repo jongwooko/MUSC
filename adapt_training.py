@@ -197,6 +197,7 @@ def main(conf):
         metric_name=metric_name,
         adapt_loaders=adapt_loaders,
         hooks=hooks,
+        use_fl=conf.use_fl
     )
 
     # update the status.
