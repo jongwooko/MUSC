@@ -234,11 +234,12 @@ class BertForSequenceTagging(LinearPredictor):
     def get_last_hidden(
         self,
         input_ids=None,
-        attention_mas=None,
+        attention_mask=None,
         token_type_ids=None,
         position_ids=None,
         head_mask=None,
         inputs_embeds=None,
+        if_tgts=None,
     ):
         bert_out = self.bert(
             input_ids,

@@ -208,6 +208,8 @@ class AdaptTuner(BaseTrainer):
             batched, golds, uids, _golds_tagging = self.collocate_batch_fn(batched)
             with torch.no_grad():
                 last_hiddens = self.model.get_last_hidden(**batched)
+                if self.conf.dataset_name in ["conll2003", "panx", "udpos"]:
+                    last_hiddens = last_hiddens[batched["if_tgts"]]
                 for last_hidden, gold in list(zip(last_hiddens, golds)):
                     self.target_mean[gold.item()] += last_hidden.cpu().numpy()
 
