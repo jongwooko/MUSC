@@ -1,11 +1,20 @@
-from .bert_modeling import (
+from .modeling_bert import (
     BertModel, 
     BertPreTrainedModel,
     BertForMultipleChoice,
 )
+
+from .modeling_xlm_roberta import (
+    XLMRobertaModel,
+    XLMRobertaForSequenceClassification,
+    XLMRobertaForMultipleChoice,
+    XLMRobertaForTokenClassification,
+)
+    
 from transformers.configuration_roberta import RobertaConfig
 from transformers.tokenization_bert import BertTokenizer
-from transformers.tokenization_roberta import RobertaTokenizer
+from transformers.tokenization_xlm_roberta import XLMRobertaTokenizer
+# from transformers.tokenization_roberta import RobertaTokenizer
 
 import torch.nn as nn
 import torch
@@ -137,7 +146,6 @@ class BertForSequenceClassification(BertPreTrainedModel):
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         return logits
-        
 
 class LinearPredictor(BertPreTrainedModel):
     def __init__(self, bert_config, out_dim, dropout):

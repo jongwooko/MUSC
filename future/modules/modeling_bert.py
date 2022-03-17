@@ -175,6 +175,7 @@ class BertEmbeddings(nn.Module):
             input_shape = input_ids.size()
         else:
             input_shape = inputs_embeds.size()[:-1]
+        
 
         seq_length = input_shape[1]
         device = input_ids.device if input_ids is not None else inputs_embeds.device

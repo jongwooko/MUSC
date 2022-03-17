@@ -1,6 +1,8 @@
 from collections import namedtuple
 from .nets import (BertForSequenceClassification, BertForMultipleChoice,
                    BertTokenizer, BertForSequenceTagging,
+                   XLMRobertaForSequenceClassification, XLMRobertaForMultipleChoice,
+                   XLMRobertaForTokenClassification, XLMRobertaTokenizer
 )
 
 from .to_device import seqcls_batch_to_device, _Seqcls_task_container
@@ -13,6 +15,12 @@ ptl2classes = {
         BertForSequenceTagging,
         BertForMultipleChoice,
         BertTokenizer,
+    ),
+    "roberta": Classes(
+        XLMRobertaForSequenceClassification,
+        XLMRobertaForTokenClassification,
+        XLMRobertaForMultipleChoice,
+        XLMRobertaTokenizer,
     )
 }
 

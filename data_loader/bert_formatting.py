@@ -51,7 +51,8 @@ def glue_example_to_feature(
         if not hasattr(eg, "text_b"):  
             setattr(eg, "text_b", None)
         inputs = patched_encode_plus(
-            eg.text_a, eg.text_b, add_special_tokens=True, max_length=max_seq_len
+            eg.text_a, eg.text_b, add_special_tokens=True, max_length=max_seq_len,
+            return_token_type_ids=True
         )
         
         input_ids, token_type_ids = inputs["input_ids"], inputs["token_type_ids"]
