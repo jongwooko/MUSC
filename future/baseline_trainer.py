@@ -22,7 +22,6 @@ class BaselineTuner(BaseTrainer):
 
     def _init_model_opt(self, model):
         print ("Initialize Optimizer and Model")
-#         model = self._parallel_to_device(model)
         opt = torch.optim.Adam(model.parameters(), lr=self.conf.finetune_lr)
         opt.zero_grad()
         model.zero_grad()
@@ -90,7 +89,10 @@ class BaselineTuner(BaseTrainer):
                     batched, golds, uids, _golds_tagging = self.collocate_batch_fn(
                         batched
                     )
-                    logits, *_ = self._model_forward(self.model, **batched)
+                    if self.conf.supcon:
+                        logits = self._model_contrast_forward(self.model, **batched)
+                    else:
+                        logits, *_ = self._model_forward(self.model, **batched)
                     loss = self.criterion(logits, golds).mean()
                     trn_loss.append(loss.item())
                     loss.backward()

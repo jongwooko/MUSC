@@ -1,6 +1,7 @@
 from torch.utils.data import SequentialSampler, RandomSampler
 from .hooks import EvaluationRecorder
 import utils.eval_meters as eval_meters
+from future.losses import SupConLoss
 from seqeval.metrics import f1_score as f1_score_tagging
 import torch
 
@@ -11,7 +12,11 @@ class BaseTrainer(object):
         self.logger = logger
         self.log_fn_json = logger.log_metric
         self.log_fn = logger.log
-        self.criterion = criterion
+        
+        if conf.supcon:
+            self.criterion = SupConLoss()
+        else:
+            self.criterion = criterion
 
         self._batch_step = 0
         self._epoch_step = 0
@@ -35,6 +40,14 @@ class BaseTrainer(object):
         if self.model_ptl == "distilbert" and "token_type_ids" in kwargs:
             kwargs.pop("token_type_ids")
         return model(**kwargs)
+    
+    def _model_contrast_forward(self, model, **kwargs):
+        if self.model_ptl == "distilbert" and "token_type_ids" in kwargs:
+            kwargs.pop("token_type_ids")
+        try:
+            return model(supcon=True, **kwargs)
+        except:
+            return model.module(supcon=True, **kwargs)
 
     def _infer_one_loader(
         self, model, loader, collocate_batch_fn, metric_name="accuracy", device=None, # transformation_vector=None

@@ -117,6 +117,32 @@ def init_hooks(conf, metric_name):
     )
     return [eval_recorder]
 
+def confirm_model(conf, model):
+    assert conf.supcon == False
+    
+    PATH='/home/vessl/FSXLT/checkpoint_baseline/xnli/debug/1647688221_model_task-xnli_flr-3.0E-05_ftbs-32_ftepcs-10_sd-3_trnfast-False_evalevery-1000_tlang-en_vlang-en/state_dicts/best_state.pt'
+    model.load_state_dict(torch.load(PATH)['best_state_dict'], strict=True)
+    
+    # lets turn off the grad for all first
+    for name, param in model.named_parameters():
+        param.requires_grad = False
+        
+    # if train classifier layer
+    if conf.train_classifier:
+        for name, param in model.named_parameters():
+            if "classifier" in name:
+                param.requires_grad = True
+                
+    # if train pooler layer
+    if conf.train_pooler:
+        for name, param in model.named_parameters():
+            if "bert.pooler" in name:
+                param.requires_grad = True
+                
+    for name, param in model.named_parameters():
+        print (name, param.requires_grad)
+        
+    return model
 
 def main(conf):
 
@@ -129,6 +155,8 @@ def main(conf):
 
     # init model
     model, tokenizer, data_iter, metric_name, collocate_batch_fn = init_task(conf)
+    if not conf.supcon:
+        model = confirm_model(conf, model)
     adapt_loaders = {}
     for language, language_dataset in data_iter.items():
         # NOTE: the sample dataset are refered

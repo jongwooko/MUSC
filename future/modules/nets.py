@@ -39,8 +39,8 @@ class BertForSequenceClassification(BertPreTrainedModel):
         head_mask=None,
         inputs_embeds=None,
         labels=None,
+        supcon=False,
     ):
-        
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
@@ -49,6 +49,11 @@ class BertForSequenceClassification(BertPreTrainedModel):
             head_mask=head_mask,
             inputs_embeds=inputs_embeds,
         )
+        
+        if supcon:
+            sequence_output = outputs[0]
+            first_token_tensor = sequence_output[:, 0]
+            return first_token_tensor
 
         pooled_output = outputs[1]
 
