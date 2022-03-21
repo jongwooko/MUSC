@@ -40,7 +40,13 @@ def get_args():
     parser.add_argument("--world", default="0", type=str)
     parser.add_argument("--local_rank", type=int, default=-1,
                         help="lcoal_rank for distributed training on gpus")
-
+    
+    # method
+    parser.add_argument("--supcon", action="store_true",
+                        help="Whether to use supervised constrastive loss")
+    parser.add_argument("--train_classifier", type=str2bool, default=True)
+    parser.add_argument("--train_pooler", type=str2bool, default=True)
+    
     return parser
 
 
