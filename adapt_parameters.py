@@ -31,6 +31,7 @@ def get_args():
     parser.add_argument("--train_all_params", type=str2bool, default=True)
     parser.add_argument("--train_classifier", type=str2bool, default=True)
     parser.add_argument("--train_pooler", type=str2bool, default=True)
+    parser.add_argument("--train_extractor", type=str2bool, default=True)
     parser.add_argument("--reinit_classifier", type=str2bool, default=False)
     parser.add_argument("--reinit_pooler", type=str2bool, default=False)
 
