@@ -139,10 +139,9 @@ def confirm_model(conf, model):
     for name, param in model.named_parameters():
         param.requires_grad = False
 
-    # if train classifier layer
-    if conf.train_classifier:
+    if conf.train_extractor:
         for name, param in model.named_parameters():
-            if "classifier" in name:
+            if "classifier" not in name and "bert.pooler" not in name:
                 param.requires_grad = True
 
     # if train pooler layer
@@ -151,10 +150,17 @@ def confirm_model(conf, model):
             if "bert.pooler" in name:
                 param.requires_grad = True
 
+    # if train classifier layer
+    if conf.train_classifier:
+        for name, param in model.named_parameters():
+            if "classifier" in name:
+                param.requires_grad = True
+
     # if train all, turn on everything
     if conf.train_all_params:
         for name, param in model.named_parameters():
             param.requires_grad = True
+            
 
     for name, param in model.named_parameters():
         print(name, param.requires_grad)
