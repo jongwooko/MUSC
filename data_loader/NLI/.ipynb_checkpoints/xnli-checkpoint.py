@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 from ..common import (
     SentencePairExample,
     MultilingualRawDataset,
@@ -11,8 +12,12 @@ from ..data_configs import abbre2language
 
 
 class XNLIDataset(MultilingualRawDataset):
-    def __init__(self):
+    def __init__(self, conf):
         self.name = "xnli"
+        self.conf = conf
+        self.mislabel_type = conf.mislabel_type
+        self.mislabel_ratio = conf.mislabel_ratio
+        self.imbalance_ratio = conf.imbalance_ratio
         self.lang_abbres = [
             "ar",
             "bg",
@@ -45,21 +50,27 @@ class XNLIDataset(MultilingualRawDataset):
 
     def create_contents(self):
         # for mnli, we only use train (no dev)
-        mnli_ = "./data/xnli/MNLI/"
+        # mnli_ = "./data/download/xnli/"
+        mnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         entries = []
-        for file_ in ["train_split.tsv"]:
+        for file_ in ["train-en.tsv"]:
             file_ = os.path.join(mnli_, file_)
-            entries.extend(self.mnli_parse(file_, "trn"))
-
+            sentence_pair_egs = self.mnli_parse(file_, "trn")
+            sentence_pair_egs = self.gen_mislabeled_data(sentence_pair_egs, self.conf.mislabel_type, self.conf.mislabel_ratio)
+            entries.extend(sententence_pair_egs)
         
-        xnli_ = "./data/xnli/XNLI-all/"
-        for which_split in ("dev", "test"):
-            file_ = os.path.join(xnli_, f"xnli.{which_split}.tsv")
-            if which_split == "dev":
-                which_split = "val"
-            else:
-                which_split = "tst"
-            entries.extend(self.xnli_parse(file_, which_split))
+        # xnli_ = "./data/download/xnli/"
+        xnli_ = "/input/jongwooko/xlt/data/download/xnli/"
+        for lang_abbre in self.lang_abbres:
+            for which_split in ("dev", "test"):
+                file_ = os.path.join(xnli_, f"{which_split}-{lang_abbre}.tsv")
+                if which_split == "dev":
+                    which_split = "val"
+                elif which_split == "test":
+                    which_split = "tst"
+                else:
+                    raise ValueError
+                entries.extend(self.xnli_parse(file_, which_split, lang_abbre))
 
         entries = sorted(entries, key=lambda x: x[0])  # groupby requires contiguous
         for language, triplets in itertools.groupby(entries, key=lambda x: x[0]):
@@ -91,11 +102,10 @@ class XNLIDataset(MultilingualRawDataset):
     def mnli_parse(self, input_file, which_split):
         sentence_pair_egs = []
         with open(input_file, "r") as f:
-            next(f)
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
-                label = line[-1]
-                text_a, text_b = line[8], line[9]
+                assert len(line) == 3
+                text_a, text_b, label = line[0], line[1], line[2]
                 assert label in self.get_labels(), f"{label}, {input_file}"
                 sentence_pair_egs.append(
                     (
@@ -111,21 +121,83 @@ class XNLIDataset(MultilingualRawDataset):
                 )
         assert len(sentence_pair_egs) == 392702, f"{len(sentence_pair_egs)}"
         return sentence_pair_egs
+    
+    def gen_imbalanced_data(self, sentence_pair_egs, seq_num_per_cls):
+        """
+        Gen a list of imbalanced training data, and replace the origin with generated ones.
+        """
+        import random
+        import copy
+        new_sentence_pair_egs = []
+        _sentence_pair_egs = copy.deepcopy(sentence_pair_egs)
+        _seq_num_per_cls = [0 for _ in range(self.num_labels)]
+        
+        random.shuffle(_sentence_pair_egs)
+        for (lang, split, data) in _sentence_pair_egs:
+            if _seq_num_per_cls[data.label] < seq_num_per_cls[data.label]:
+                new_sentence_pair_egs.append(
+                    (
+                        lang,
+                        split,
+                        SentencePairExample(
+                            uid=data.uid,
+                            text_a=data.text_a,
+                            text_b=data.text_b,
+                            label=data.label
+                        )
+                    )
+                )
+        return new_sentence_pair_egs
+    
+    def gen_mislabeled_data(self, sentence_pair_egs, mislabel_type, mislabel_ratio):
+        """
+        Gen a list of mislabeled training data, and replace the origin with generated ones.
+        """
+        new_sentence_pair_egs = []
+        if mislabeled_type == "uniform":
+            for (lang, split, data) in sentence_pair_egs:
+                if np.random.rand() < mislabel_ratio:
+                    new_label = data.label
+                    while new_label == data.label:
+                        new_label = np.random.randint(self.num_labels)
+                    new_sentence_pair_egs.append(
+                        (
+                            lang,
+                            split,
+                            SentencePairExample(
+                                uid=data.uid,
+                                text_a=data.text_a,
+                                text_b=data.text_b,
+                                label=new_label,
+                            ),
+                        )
+                    )
+            return new_sentence_pair_egs
+        
+        elif mislabeled_type == "model":
+            pass
+        
+        else:
+            raise NotImplementedError
 
-    def xnli_parse(self, input_file, which_split):
+    def xnli_parse(self, input_file, which_split, lang_abbre):
         sentence_pair_egs = []
         with open(input_file, "r") as f:
-            next(f)
             for idx, line in enumerate(f):
-                segs = line.strip().split("\t")
-                language_abbre, label = segs[0], segs[1]
-                text_a, text_b = segs[-3], segs[-2]  # tokenized already
+                line = line.strip().split("\t")
+                if len(line) == 3:
+                    text_a, text_b, label = line[0], line[1], line[2]
+                    assert label in self.get_labels(), f"{label}, {input_file}"
+                # elif len(line) == 2:
+                #     text_a, text_b, label = line[0], line[1], None
+                else:
+                    raise ValueError
                 sentence_pair_egs.append(
                     (
-                        abbre2language[language_abbre],
+                        abbre2language[lang_abbre],
                         which_split,
                         SentencePairExample(
-                            uid=f"{abbre2language[language_abbre]}-{idx}-{which_split}",
+                            uid=f"{abbre2language[lang_abbre]}-{idx}-{which_split}",
                             text_a=text_a,
                             text_b=text_b,
                             label=label,
