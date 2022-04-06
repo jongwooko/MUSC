@@ -93,8 +93,7 @@ class BaselineTuner(BaseTrainer):
                         batched
                     )
                     logits, feats, *_ = self._model_forward(self.model, **batched)
-                    _logits = feats if self.conf.supcon else logits
-                    loss = self.criterion(_logits, golds).mean()
+                    loss = self.criterion(logits, golds).mean()
                     trn_loss.append(loss.item())
                     loss.backward()
                 opt.step()

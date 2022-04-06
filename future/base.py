@@ -13,11 +13,7 @@ class BaseTrainer(object):
         self.log_fn_json = logger.log_metric
         self.log_fn = logger.log
         
-        if conf.supcon:
-            self.criterion = SupConLoss()
-        else:
-            self.criterion = criterion
-
+        self.criterion = criterion
         self._batch_step = 0
         self._epoch_step = 0
 
