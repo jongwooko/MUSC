@@ -105,8 +105,8 @@ class BaselineTuner(BaseTrainer):
                     f" train batch  @  {batch_index}, epoch @ {epoch_index}"
                     f" global batch @ {self._batch_step}"
                 )
-                if self._batch_step % self.conf.eval_every_batch == 0 and \
-                    (self.conf.rank==0 or self.conf.local_rank == -1):
+                if self._batch_step % self.conf.eval_every_batch == 0: # and \
+                    # (self.conf.rank==0 or self.conf.local_rank == -1):
                     if self.conf.dataset_name in ["conll2003", "panx", "udpos"]:
                         eval_score, all_scores = self.plain_eval_tagging(
                             self.model, adapt_loaders, metric_name=metric_name
@@ -151,7 +151,7 @@ class BaselineTuner(BaseTrainer):
     def plain_eval_tagging(self, model, adapt_loaders, metric_name):
         all_scores = defaultdict(list)
         val_scores = []
-        for val_language in self.conf.trn_languages:
+        for val_language in self.conf.eval_languages: # trn
             val_loaders = adapt_loaders[val_language]
             idx2label = adapt_loaders[val_language].raw_dataset.idx2label
             # for split_ in ["val_egs"]:
@@ -163,5 +163,5 @@ class BaselineTuner(BaseTrainer):
                 all_scores[val_language].append((split_, eval_res))
                 if split_ == "val_egs":
                     val_scores.append(eval_res)
-        assert len(val_scores) == len(self.conf.trn_languages)
+        assert len(val_scores) == len(self.conf.eval_languages) # trn
         return (np.mean(val_scores), all_scores)
