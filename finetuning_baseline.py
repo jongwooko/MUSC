@@ -18,7 +18,7 @@ import os
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
                               TensorDataset)
 from torch.utils.data.distributed import DistributedSampler
-from apex.parallel import DistributedDataParallel as DDP
+# from apex.parallel import DistributedDataParallel as DDP
 
 # config = dict(
 #     ptl="bert",
@@ -49,7 +49,7 @@ def init_task(conf):
     
     assert (torch.cuda.is_available())
     if conf.local_rank == -1:
-        device = torch.device("cuda:{}".format(conf.world[0]))
+        device = torch.device("cuda")
         conf.rank = 0
     else:
         device_count = torch.cuda.device_count()
@@ -66,7 +66,7 @@ def init_task(conf):
         torch.distributed.init_process_group(backend="nccl", world_size=conf.world_size,
                                              rank=conf.rank, init_method=init_method)
     
-    raw_dataset = task_configs.task2dataset[conf.dataset_name]()
+    raw_dataset = task_configs.task2dataset[conf.dataset_name](conf)
     metric_name = raw_dataset.metrics[0]
     classes = ptl2classes[conf.ptl]
     tokenizer = classes.tokenizer.from_pretrained(conf.model)
@@ -91,6 +91,8 @@ def init_task(conf):
                 model=conf.model,
                 tokenizer=tokenizer,
                 max_seq_len=conf.max_seq_len,
+                mislabel_type=conf.mislabel_type,
+                mislabel_ratio=conf.mislabel_ratio
             )
     else:
         data_iter[raw_dataset.language] = data_iter_cls(
@@ -117,35 +119,6 @@ def init_hooks(conf, metric_name):
     )
     return [eval_recorder]
 
-def confirm_model(conf, model):
-    assert conf.supcon == False
-    PATH = conf.supcon_checkpoint
-    try:
-        model.load_state_dict(torch.load(PATH)['best_state_dict'], strict=True)
-    except:
-        model.load_state_dict(torch.load(PATH), strict=True)
-    
-    # lets turn off the grad for all first
-    for name, param in model.named_parameters():
-        param.requires_grad = False
-        
-    # if train classifier layer
-    if conf.train_classifier:
-        for name, param in model.named_parameters():
-            if "classifier" in name:
-                param.requires_grad = True
-                
-    # if train pooler layer
-    if conf.train_pooler:
-        for name, param in model.named_parameters():
-            if "bert.pooler" in name:
-                param.requires_grad = True
-                
-    for name, param in model.named_parameters():
-        print (name, param.requires_grad)
-        
-    return model
-
 def main(conf):
 
     if conf.override:
@@ -157,8 +130,6 @@ def main(conf):
 
     # init model
     model, tokenizer, data_iter, metric_name, collocate_batch_fn = init_task(conf)
-    if not conf.supcon:
-        model = confirm_model(conf, model)
     adapt_loaders = {}
     for language, language_dataset in data_iter.items():
         # NOTE: the sample dataset are refered

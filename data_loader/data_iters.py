@@ -40,7 +40,7 @@ class TaggingDataIter(object):
             
     def wrap_iter(self, task, model, which_split, tagged_sents, tokenizer, max_seq_len, do_cache):
         cached_ = os.path.join(
-            "data",
+            "/input/jongwooko/xlt/data", # change this part
             "cached",
             f"{task},{max_seq_len},{model},{which_split},{len(tagged_sents)},cached.pkl",
         )
@@ -112,7 +112,8 @@ class _TaggingIter(torch.utils.data.Dataset):
         )
     
 class SeqClsDataIter(object):
-    def __init__(self, raw_dataset, model, tokenizer, max_seq_len, do_cache=True):
+    def __init__(self, raw_dataset, model, tokenizer, max_seq_len, 
+                 mislabel_type, mislabel_ratio, do_cache=True):
         self.raw_dataset = raw_dataset
         if raw_dataset.trn_egs is not None:
             self.trn_egs = self.wrap_iter(
@@ -123,6 +124,8 @@ class SeqClsDataIter(object):
                 tokenizer=tokenizer,
                 max_seq_len=max_seq_len,
                 do_cache=do_cache,
+                mislabel_type=mislabel_type,
+                mislabel_ratio=mislabel_ratio
             )
         if raw_dataset.val_egs is not None:
             self.val_egs = self.wrap_iter(
@@ -133,6 +136,8 @@ class SeqClsDataIter(object):
                 tokenizer=tokenizer,
                 max_seq_len=max_seq_len,
                 do_cache=do_cache,
+                mislabel_type="None",
+                mislabel_ratio=0.0
             )
         if raw_dataset.tst_egs is not None:
             self.tst_egs = self.wrap_iter(
@@ -143,14 +148,17 @@ class SeqClsDataIter(object):
                 tokenizer=tokenizer,
                 max_seq_len=max_seq_len,
                 do_cache=do_cache,
+                mislabel_type="None",
+                mislabel_ratio=0.0
             )
             
-    def wrap_iter(self, task, model, which_split, egs, tokenizer, max_seq_len, do_cache):
+    def wrap_iter(self, task, model, which_split, egs, tokenizer, max_seq_len, 
+                  do_cache, mislabel_type, mislabel_ratio):
         len_egs = 0 if egs is None else len(egs)
         cached_ = os.path.join(
-            "data",
+            "/input/jongwooko/xlt/data", # change this part
             "cached",
-            f"{task},{max_seq_len},{model},{which_split},{len_egs},cached.pkl",
+            f"{task},{max_seq_len},{model},{which_split},{len_egs},{mislabel_type},{mislabel_ratio},cached.pkl",
         )
         meta_ = cached_.replace(".pkl", ".metainfo")
         if os.path.exists(cached_) and do_cache:

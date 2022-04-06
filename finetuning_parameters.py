@@ -4,7 +4,7 @@ import argparse
 
 
 def get_args():
-    ROOT_DIRECTORY = "./"
+    ROOT_DIRECTORY = "/input/jongwooko/xlt"
     RAW_DATA_DIRECTORY = join(ROOT_DIRECTORY, "data", "download")
     TRAINING_DIRECTORY = join(ROOT_DIRECTORY, "checkpoint_baseline")
 
@@ -39,15 +39,12 @@ def get_args():
     parser.add_argument("--track_time", default=True, type=str2bool)
     parser.add_argument("--world", default="0", type=str)
     parser.add_argument("--local_rank", type=int, default=-1,
-                        help="lcoal_rank for distributed training on gpus")
+                        help="local_rank for distributed training on gpus")
     
-    # method
-    parser.add_argument("--supcon", action="store_true",
-                        help="Whether to use supervised constrastive loss")
-    parser.add_argument("--supcon_checkpoint", type=str,
-                        help="Checkpoint for Linear Evaluation after SupCon Loss")
-    parser.add_argument("--train_classifier", type=str2bool, default=True)
-    parser.add_argument("--train_pooler", type=str2bool, default=True)
+    # generate mislabeled & imbalanced dataset
+    parser.add_argument("--mislabel_type", type=str, choices=["uniform", "model"])
+    parser.add_argument("--mislabel_ratio", type=float, choices=[0.0, 0.1, 0.2, 0.3, 0.4])
+    parser.add_argument("--imbalance_ratio", type=float, choices=[1.0, 10.0])
     
     return parser
 
