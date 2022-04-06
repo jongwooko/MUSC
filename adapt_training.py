@@ -78,9 +78,16 @@ def init_task(conf):
 
             # model.load_state_dict(ckpt, strict=False)
             # ckpt = {k[7:]: v for k, v in ckpt.items()}
-            model.load_state_dict(ckpt["best_state_dict"], strict=True)
+            try:
+                model.load_state_dict(ckpt["best_state_dict"], strict=True)
+            except:
+                model.load_state_dict(ckpt, strict=True)
 
     exp_languages = sorted(list(set(conf.adapt_trn_languages)))
+    
+    if 'english' not in exp_languages:
+        exp_languages += ['english']
+    
     data_iter_cls = data_configs.task2dataiter[conf.dataset_name]
     data_iter = {}
     if hasattr(raw_dataset, "contents"):
@@ -181,12 +188,20 @@ def main(conf):
     model = confirm_model(conf, model)
     adapt_loaders = {}
     for language, language_dataset in data_iter.items():
-        adapt_loaders[language] = wrap_sampler(
-            trn_batch_size=conf.adapt_batch_size,
-            infer_batch_size=conf.inference_batch_size,
-            language=language,
-            language_dataset=language_dataset,
-        )
+        if language == 'english':
+            adapt_loaders[language] = wrap_sampler(
+                trn_batch_size= 32 - conf.adapt_batch_size,
+                infer_batch_size=conf.inference_batch_size,
+                language=language,
+                language_dataset=language_dataset,
+            )
+        else:
+            adapt_loaders[language] = wrap_sampler(
+                trn_batch_size=conf.adapt_batch_size,
+                infer_batch_size=conf.inference_batch_size,
+                language=language,
+                language_dataset=language_dataset,
+            )
 
     hooks = init_hooks(conf, metric_name)
 

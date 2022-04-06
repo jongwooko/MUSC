@@ -40,14 +40,6 @@ class BaseTrainer(object):
         if self.model_ptl == "distilbert" and "token_type_ids" in kwargs:
             kwargs.pop("token_type_ids")
         return model(**kwargs)
-    
-    def _model_contrast_forward(self, model, **kwargs):
-        if self.model_ptl == "distilbert" and "token_type_ids" in kwargs:
-            kwargs.pop("token_type_ids")
-        try:
-            return model(supcon=True, **kwargs)
-        except:
-            return model.module(supcon=True, **kwargs)
 
     def _infer_one_loader(
         self, model, loader, collocate_batch_fn, metric_name="accuracy", device=None, # transformation_vector=None

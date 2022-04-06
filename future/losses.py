@@ -12,8 +12,8 @@ class SupConLoss(nn.Module):
     Supervised Contrastive Learning: https://arxiv.org/pdf/2004.11362.pdf.
     It also supports the unsupervised contrastive loss in SimCLR
     """
-    def __init__(self, temperature=0.5, contrast_mode='all',
-                 base_temperature=0.5): # temperature 낮으면 안됨.
+    def __init__(self, temperature=1.0, contrast_mode='all',
+                 base_temperature=1.0): # temperature 낮으면 안됨.
         super(SupConLoss, self).__init__()
         self.temperature = temperature
         self.contrast_mode = contrast_mode
@@ -84,6 +84,7 @@ class SupConLoss(nn.Module):
             torch.arange(batch_size * anchor_count).view(-1, 1).to(device),
             0
         )
+        
         mask = mask * logits_mask
         
         # compute log_prob
@@ -91,10 +92,11 @@ class SupConLoss(nn.Module):
         log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True))
         
         # compute mean of log-likelihood over positive
-        mean_log_prob_pos = (mask * log_prob).sum(1) / mask.sum(1)
+        mean_log_prob_pos = (mask * log_prob).sum(1) 
+        mean_log_prob_pos /= torch.max(torch.ones(mask.size(0)).to(device), mask.sum(1))
         
         # loss
         loss = - (self.temperature / self.base_temperature) * mean_log_prob_pos
-        loss = loss.view(anchor_count, batch_size).mean()
         
+        loss = loss.view(anchor_count, batch_size).mean()
         return loss

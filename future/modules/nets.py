@@ -39,7 +39,6 @@ class BertForSequenceClassification(BertPreTrainedModel):
         head_mask=None,
         inputs_embeds=None,
         labels=None,
-        supcon=False,
     ):
         outputs = self.bert(
             input_ids,
@@ -49,18 +48,14 @@ class BertForSequenceClassification(BertPreTrainedModel):
             head_mask=head_mask,
             inputs_embeds=inputs_embeds,
         )
-        
-        if supcon:
-            sequence_output = outputs[0]
-            first_token_tensor = sequence_output[:, 0]
-            return first_token_tensor
-
+            
+        sequence_output = outputs[0]
         pooled_output = outputs[1]
 
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
 
-        outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
+        outputs = (logits,) + (sequence_output[:, 0],) + outputs[2:]  # add hidden states and attention if they are here
 
         if labels is not None:
             if self.num_labels == 1:
@@ -70,7 +65,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
             else:
                 loss_fct = CrossEntropyLoss()
                 loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-            outputs = (loss,) + outputs
+            outputs = (loss,) + + outputs
 
         return outputs  # (loss), logits, (hidden_states), (attentions)
     

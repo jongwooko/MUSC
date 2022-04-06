@@ -59,6 +59,7 @@ def get_args():
     # methods
     parser.add_argument("--use_fl", action="store_true",
                         help="Whether to use free lunch")
+    parser.add_argument("--supcon", action="store_true")
 
     # parse conf.
     conf = parser.parse_args()

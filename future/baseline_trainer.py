@@ -74,8 +74,11 @@ class BaselineTuner(BaseTrainer):
         for epoch_index in tqdm(range(1, self.conf.finetune_epochs + 1)):
             trn_iters = []
             for language in self.conf.trn_languages:
-                egs = adapt_loaders[language].trn_egs
-                assert isinstance(egs.sampler, RandomSampler) or isinstance(egs.sampler, DistributedSampler)
+                try:
+                    egs = adapt_loaders[language].trn_egs
+                    assert isinstance(egs.sampler, RandomSampler) or isinstance(egs.sampler, DistributedSampler)
+                except:
+                    egs = adapt_loaders[language].val_egs
                 trn_iters.append(iter(egs))
 
             batches_per_epoch = max(len(ti) for ti in trn_iters)
@@ -89,11 +92,9 @@ class BaselineTuner(BaseTrainer):
                     batched, golds, uids, _golds_tagging = self.collocate_batch_fn(
                         batched
                     )
-                    if self.conf.supcon:
-                        logits = self._model_contrast_forward(self.model, **batched)
-                    else:
-                        logits, *_ = self._model_forward(self.model, **batched)
-                    loss = self.criterion(logits, golds).mean()
+                    logits, feats, *_ = self._model_forward(self.model, **batched)
+                    _logits = feats if self.conf.supcon else logits
+                    loss = self.criterion(_logits, golds).mean()
                     trn_loss.append(loss.item())
                     loss.backward()
                 opt.step()

@@ -119,9 +119,11 @@ def init_hooks(conf, metric_name):
 
 def confirm_model(conf, model):
     assert conf.supcon == False
-    
-    PATH='/home/vessl/FSXLT/checkpoint_baseline/xnli/debug/1647688221_model_task-xnli_flr-3.0E-05_ftbs-32_ftepcs-10_sd-3_trnfast-False_evalevery-1000_tlang-en_vlang-en/state_dicts/best_state.pt'
-    model.load_state_dict(torch.load(PATH)['best_state_dict'], strict=True)
+    PATH = conf.supcon_checkpoint
+    try:
+        model.load_state_dict(torch.load(PATH)['best_state_dict'], strict=True)
+    except:
+        model.load_state_dict(torch.load(PATH), strict=True)
     
     # lets turn off the grad for all first
     for name, param in model.named_parameters():

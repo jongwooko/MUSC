@@ -89,15 +89,31 @@ class AdaptTuner(BaseTrainer):
 
         for epoch_index in range(1, self.conf.adapt_epochs + 1):
             all_uids, epoch_losses = [], []
-            for batched in adapt_loaders[adapt_language].trn_egs:
-                batched, golds, uids, _golds_tagging = self.collocate_batch_fn(batched)
-                logits, *_ = self._model_forward(self.model, **batched)
-                loss = self.criterion(logits, golds).mean()
+            
+            # for batched in adapt_loaders[adapt_language].trn_egs:
+                # batched, golds, uids, _golds_tagging = self.collocate_batch_fn(batched)
+            
+            for batched1, batched2 in zip(adapt_loaders['english'].trn_egs, adapt_loaders[adapt_language].trn_egs):
+                if self.conf.supcon:
+                    with torch.no_grad():
+                        batched1, golds1, uids1, _golds_tagging1 = self.collocate_batch_fn(batched1)
+                        logits1, feats1, *_ = self._model_forward(self.model, **batched1)
+                
+                batched2, golds2, uids2, _golds_tagging2 = self.collocate_batch_fn(batched2)
+                logits2, feats2, *_ = self._model_forward(self.model, **batched2)
+                if self.conf.supcon:
+                    _logits = torch.cat([feats1, feats2], dim=0)
+                    golds = torch.cat([golds1, golds2], dim=0)
+                else:
+                    _logits = logits2
+                    golds = golds2
+                    
+                loss = self.criterion(_logits, golds).mean()
                 epoch_losses.append(loss.item())
                 loss.backward()
                 opt.step()
                 opt.zero_grad()
-                all_uids.extend(uids)
+                all_uids.extend(uids2)
                 self._batch_step += 1
             epoch_losses_str = "->".join(
                 [f"{epoch_loss:.3f}" for epoch_loss in epoch_losses]

@@ -44,6 +44,8 @@ def get_args():
     # method
     parser.add_argument("--supcon", action="store_true",
                         help="Whether to use supervised constrastive loss")
+    parser.add_argument("--supcon_checkpoint", type=str,
+                        help="Checkpoint for Linear Evaluation after SupCon Loss")
     parser.add_argument("--train_classifier", type=str2bool, default=True)
     parser.add_argument("--train_pooler", type=str2bool, default=True)
     
