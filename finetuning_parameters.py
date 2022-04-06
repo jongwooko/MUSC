@@ -42,8 +42,8 @@ def get_args():
                         help="local_rank for distributed training on gpus")
     
     # generate mislabeled & imbalanced dataset
-    parser.add_argument("--mislabel_type", type=str, choices=["uniform", "model"])
-    parser.add_argument("--mislabel_ratio", type=float, choices=[0.0, 0.1, 0.2, 0.3, 0.4])
+    parser.add_argument("--mislabel_type", type=str, default="uniform", choices=["uniform", "model"])
+    parser.add_argument("--mislabel_ratio", type=float, default=0.0, choices=[0.0, 0.1, 0.2, 0.3, 0.4])
     parser.add_argument("--imbalance_ratio", type=float, choices=[1.0, 10.0])
     
     return parser
