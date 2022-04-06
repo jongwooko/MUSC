@@ -7,6 +7,7 @@ from ..common import (
 import itertools
 import os
 import json
+import numpy as np
 from collections import OrderedDict
 from ..data_configs import abbre2language
 
@@ -15,9 +16,6 @@ class XNLIDataset(MultilingualRawDataset):
     def __init__(self, conf):
         self.name = "xnli"
         self.conf = conf
-        self.mislabel_type = conf.mislabel_type
-        self.mislabel_ratio = conf.mislabel_ratio
-        self.imbalance_ratio = conf.imbalance_ratio
         self.lang_abbres = [
             "ar",
             "bg",
@@ -57,7 +55,7 @@ class XNLIDataset(MultilingualRawDataset):
             file_ = os.path.join(mnli_, file_)
             sentence_pair_egs = self.mnli_parse(file_, "trn")
             sentence_pair_egs = self.gen_mislabeled_data(sentence_pair_egs, self.conf.mislabel_type, self.conf.mislabel_ratio)
-            entries.extend(sententence_pair_egs)
+            entries.extend(sentence_pair_egs)
         
         # xnli_ = "./data/download/xnli/"
         xnli_ = "/input/jongwooko/xlt/data/download/xnli/"
@@ -154,24 +152,24 @@ class XNLIDataset(MultilingualRawDataset):
         Gen a list of mislabeled training data, and replace the origin with generated ones.
         """
         new_sentence_pair_egs = []
-        if mislabeled_type == "uniform":
+        if mislabel_type == "uniform":
             for (lang, split, data) in sentence_pair_egs:
+                new_label = data.label
                 if np.random.rand() < mislabel_ratio:
-                    new_label = data.label
                     while new_label == data.label:
-                        new_label = np.random.randint(self.num_labels)
-                    new_sentence_pair_egs.append(
-                        (
-                            lang,
-                            split,
-                            SentencePairExample(
-                                uid=data.uid,
-                                text_a=data.text_a,
-                                text_b=data.text_b,
-                                label=new_label,
-                            ),
-                        )
+                        new_label = self.label_list[np.random.randint(self.num_labels)]
+                new_sentence_pair_egs.append(
+                    (
+                        lang,
+                        split,
+                        SentencePairExample(
+                            uid=data.uid,
+                            text_a=data.text_a,
+                            text_b=data.text_b,
+                            label=new_label,
+                        ),
                     )
+                )
             return new_sentence_pair_egs
         
         elif mislabeled_type == "model":
