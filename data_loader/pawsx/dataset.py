@@ -87,6 +87,10 @@ class PAWSXDataset(MultilingualRawDataset):
                 # elif len(line) == 2:
                 #     text_a, text_b, label = line[0], line[1], None
                 else:
+                    print (len(line))
+                    print (lang)
+                    print (line)
+                    print (prev_line)
                     raise ValueError
                 portion_identifier = -1
                 sentence_egs.append(
@@ -102,6 +106,7 @@ class PAWSXDataset(MultilingualRawDataset):
                         ),
                     )
                 )
+                prev_line = line
         print(input_file, len(sentence_egs))
         return sentence_egs
     

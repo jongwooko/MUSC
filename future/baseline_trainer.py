@@ -14,7 +14,6 @@ from tqdm import tqdm
 
 class BaselineTuner(BaseTrainer):
     def __init__(self, conf, collocate_batch_fn, logger):
-        assert len(conf.trn_languages) == 1
         super(BaselineTuner, self).__init__(conf, logger)
         self.log_fn("Init trainer.")
         self.collocate_batch_fn = collocate_batch_fn
