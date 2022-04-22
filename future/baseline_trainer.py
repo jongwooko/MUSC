@@ -79,9 +79,9 @@ class BaselineTuner(BaseTrainer):
                 except:
                     egs = adapt_loaders[language].val_egs
                 trn_iters.append(iter(egs))
-
+                
             batches_per_epoch = max(len(ti) for ti in trn_iters)
-            for batch_index in range(1, batches_per_epoch + 1):
+            for batch_index in range(1, batches_per_epoch + 1): # 
                 trn_loss = []
                 for ti in trn_iters:
                     try:
@@ -91,6 +91,10 @@ class BaselineTuner(BaseTrainer):
                     batched, golds, uids, _golds_tagging = self.collocate_batch_fn(
                         batched
                     )
+                    if len(golds.size()) == 2:
+                        for k in batched.keys():
+                            batched[k] = torch.cat([batched[k][:, 0], batched[k][:, 1]], dim=0)
+                        golds = torch.cat([golds[:, 0], golds[:, 1]], dim=0)
                     logits, feats, *_ = self._model_forward(self.model, **batched)
                     loss = self.criterion(logits, golds).mean()
                     trn_loss.append(loss.item())

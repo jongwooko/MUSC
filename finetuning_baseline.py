@@ -101,6 +101,11 @@ def init_task(conf):
             tokenizer=tokenizer,
             max_seq_len=conf.max_seq_len,
         )
+    
+#     if conf.trans_train:
+#         for language in exp_languages:
+#             data_iter[language].trn_egs = task2pairiter(data_iter['english'], data_iter[language])
+        
     collocate_batch_fn = task2collocate_fn[conf.dataset_name]
     
     # apex

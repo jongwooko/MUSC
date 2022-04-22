@@ -12,7 +12,6 @@ def seqcls_collocate(batched, device=None):
     }
     return (batched, golds.to(device), uids, None)
 
-
 def tagging_batch_to_device(batched, device=None):
     if device is None:
         device = torch.cuda.current_device()

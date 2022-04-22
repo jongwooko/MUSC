@@ -46,6 +46,9 @@ def get_args():
     parser.add_argument("--mislabel_ratio", type=float, default=0.0, choices=[0.0, 0.1, 0.2, 0.3, 0.4])
     parser.add_argument("--imbalance_ratio", type=float, choices=[1.0, 10.0])
     
+    # translate-train-all
+    parser.add_argument("--trans_train", action="store_true",
+                        help="Whether to use translate-train")
     return parser
 
 
