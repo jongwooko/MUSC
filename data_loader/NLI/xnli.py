@@ -48,11 +48,12 @@ class XNLIDataset(MultilingualRawDataset):
 
     def create_contents(self):
         # for mnli, we only use train (no dev)
-        mnli_ = "/input/jongwooko/xlt/data/download/xnli/"
+        # mnli_ = "./data/download/xnli/"
+        # mnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         entries = []
         
-        # xnli_ = "./data/download/xnli/"
-        xnli_ = "/input/jongwooko/xlt/data/download/xnli/"
+        xnli_ = "./data/download/xnli/"
+        # xnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         for lang_abbre in self.lang_abbres:
             for which_split in ("train", "dev", "test"):
                 file_ = os.path.join(xnli_, f"{which_split}-{lang_abbre}.tsv")
@@ -125,6 +126,7 @@ class XNLIDataset(MultilingualRawDataset):
                     )
                 )
         assert len(sentence_pair_egs) == 392702, f"{len(sentence_pair_egs)}"
+        print(len(sentence_pair_egs), input_file)
         return sentence_pair_egs
 
     def xnli_parse(self, input_file, which_split, lang_abbre):

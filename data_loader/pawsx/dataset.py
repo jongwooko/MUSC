@@ -29,25 +29,37 @@ class PAWSXDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        pawsx_ = "/input/jongwooko/xlt/data/download/pawsx/"
+        # pawsx_ = "/input/jongwooko/xlt/data/download/pawsx/"
+        pawsx_ = "./data/download/pawsx/"
         entries = []
         for lang in self.lang_abbres:
-            for which_split, wsplit in (
-                ("train", "trn"),
-                ("dev", "val"),
-                ("test", "tst"),
-            ):
+            for which_split in ("train", "dev", "test"):
                 file_ = os.path.join(pawsx_, f"{which_split}-{lang}.tsv")
                 if not os.path.exists(file_):
                     print(f"[INFO]: skip {lang} {wsplit}: not such file")
                     continue
-                    
-                if lang == "en" and wsplit == "trn":
-                    sentence_egs = self.pawsx_parse(lang, file_, wsplit)
-                    sentence_egs = self.gen_mislabeled_data(sentence_egs, self.conf.mislabel_type, self.conf.mislabel_ratio)    
-                    entries.extend(sentence_egs)
+                
+                if which_split == "dev":
+                    which_split = "val"
+                    entries.extend(self.pawsx_parse(file_, which_split, lang))
+                elif which_split == "test":
+                    which_split = "tst"
+                    entries.extend(self.pawsx_parse(file_, which_split, lang))
+                elif which_split == "train":
+                    if lang == "en" and self.conf.trans_train:
+                        continue
+                    elif self.conf.trans_train:
+                        which_split = "trn"
+                        entries.extend(self.trans_parse(file_, which_split, lang))
+                    elif lang == "en":
+                        which_split = "trn"
+                        entries.extend(self.pawsx_parse(file_, which_split, lang))
+                    else:
+                        which_split = "trn"
+                        entries.extend(self.pawsx_parse(file_, which_split, lang))
                 else:
-                    entries.extend(self.pawsx_parse(lang, file_, wsplit))
+                    raise ValueError
+
         entries = sorted(entries, key=lambda x: x[0])  # groupby requires contiguous
         for language, triplets in itertools.groupby(entries, key=lambda x: x[0]):
             # get examples in this language
@@ -75,7 +87,7 @@ class PAWSXDataset(MultilingualRawDataset):
 
             self.contents[language] = _dataset
     
-    def pawsx_parse(self, lang, input_file, which_split):
+    def pawsx_parse(self, input_file, which_split, lang):
         sentence_egs = []
         language = abbre2language[lang]
         with open(input_file, "r") as f:
@@ -110,6 +122,58 @@ class PAWSXDataset(MultilingualRawDataset):
         print(input_file, len(sentence_egs))
         return sentence_egs
     
+    def trans_parse(self, input_file, which_split, lang):
+        sentence_egs = []
+        language = abbre2language[lang]
+
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = line.strip().split("\t")
+                if len(line) == 5:
+                    text1_a, text1_b = line[0], line[1]
+                    text2_a, text2_b, label = line[2], line[3], line[4]
+                    assert label in self.get_labels(), f"{label}, {input_file}"
+                # elif len(line) == 2:
+                #     text_a, text_b, label = line[0], line[1], None
+                else:
+                    print (len(line))
+                    print (lang)
+                    print (line)
+                    print (prev_line)
+                    raise ValueError
+                portion_identifier = -1
+                sentence_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentencePairExample(
+                            uid=f"english-{idx}-{which_split}",
+                            text_a=text1_a,
+                            text_b=text1_b,
+                            label=label,
+                            portion_identifier=portion_identifier,
+                        ),
+                    )
+                )
+
+                sentence_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentencePairExample(
+                            uid=f"{language}-{idx}-{which_split}",
+                            text_a=text2_a,
+                            text_b=text2_b,
+                            label=label,
+                            portion_identifier=portion_identifier,
+                        ),
+                    )
+                )
+
+                prev_line = line
+        print(input_file, len(sentence_egs))
+        return sentence_egs
+
     def gen_imbalanced_data(self, sentence_egs, seq_num_per_cls):
         """
         Gen a list of imbalanced training data, and replace the origin with generated ones.

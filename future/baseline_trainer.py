@@ -91,14 +91,32 @@ class BaselineTuner(BaseTrainer):
                     batched, golds, uids, _golds_tagging = self.collocate_batch_fn(
                         batched
                     )
+
+                    # if len(golds.size()) == 2:
+                    #     for k in batched.keys():
+                    #         batched[k] = torch.cat([batched[k][:, 0], batched[k][:, 1]], dim=0)
+                    #     golds = torch.cat([golds[:, 0], golds[:, 1]], dim=0)
+                    # logits, feats, *_ = self._model_forward(self.model, **batched)
+                    # loss = self.criterion(logits, golds).mean()
+
                     if len(golds.size()) == 2:
+                        batched_eng = {}
+                        batched_oth = {}
                         for k in batched.keys():
-                            batched[k] = torch.cat([batched[k][:, 0], batched[k][:, 1]], dim=0)
-                        golds = torch.cat([golds[:, 0], golds[:, 1]], dim=0)
-                    logits, feats, *_ = self._model_forward(self.model, **batched)
-                    loss = self.criterion(logits, golds).mean()
+                            batched_eng[k] = batched[k][:, 0]
+                            batched_oth[k] = batched[k][:, 1]
+                        golds = golds[:, 0]
+
+                    logits_eng, feats_eng, *_ = self._model_forward(self.model, **batched_eng)
+                    logits_oth, feats_oth, *_ = self._model_forward(self.model, **batched_oth)
+
+                    # loss = self.criterion(logits_oth, golds).mean()
+                    loss = self.criterion(logits_eng, golds).mean() + \
+                           self.criterion(logits_oth, golds).mean() + \
+                           0.1 * nn.functional.mse_loss(feats_oth, feats_eng)
                     trn_loss.append(loss.item())
                     loss.backward()
+
                 opt.step()
                 opt.zero_grad()
                 self._batch_step += 1
