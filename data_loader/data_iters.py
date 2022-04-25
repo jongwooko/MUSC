@@ -158,7 +158,7 @@ class SeqClsDataIter(object):
         cached_ = os.path.join(
             "/input/jongwooko/xlt/data", # change this part
             "cached",
-            f"{task},{max_seq_len},{model},{which_split},{len_egs},{mislabel_type},{mislabel_ratio},cached.pkl",
+            f"{task},{max_seq_len},{model},{which_split},{len_egs},cached.pkl",
         )
         meta_ = cached_.replace(".pkl", ".metainfo")
         if os.path.exists(cached_) and do_cache:
@@ -202,17 +202,40 @@ class SeqClsDataIter(object):
 
 class _SeqClsIter(torch.utils.data.Dataset):
     def __init__(self, fts):
-        self.uides = [ft.uid for ft in fts]
-        self.input_idses = torch.as_tensor(
-            [ft.input_ids for ft in fts], dtype=torch.long
-        )
-        self.golds = torch.as_tensor([ft.gold for ft in fts], dtype=torch.long)
-        self.attention_maskes = torch.as_tensor(
-            [ft.attention_mask for ft in fts], dtype=torch.long
-        )
-        self.token_type_idses = torch.as_tensor(
-            [ft.token_type_ids for ft in fts], dtype=torch.long
-        )
+        
+        fts1, fts2 = [], []
+        for ft in fts:
+            if 'english' in ft.uid:
+                fts1.append(ft)
+            else:
+                fts2.append(ft)
+        
+        if len(fts1) == len(fts2):
+            self.uides = [(ft1.uid, ft2.uid) for ft1, ft2 in zip(fts1, fts2)]
+            self.input_idses = torch.as_tensor(
+                [(ft1.input_ids, ft2.input_ids) for ft1, ft2 in zip(fts1, fts2)], dtype=torch.long
+            )
+            self.golds = torch.as_tensor([(ft1.gold, ft2.gold) for ft1, ft2 in zip(fts1, fts2)], dtype=torch.long)
+            self.attention_maskes = torch.as_tensor(
+                [(ft1.attention_mask, ft2.attention_mask) for ft1, ft2 in zip(fts1, fts2)], dtype=torch.long
+            )
+            self.token_type_idses = torch.as_tensor(
+                [(ft1.token_type_ids, ft2.token_type_ids) for ft1, ft2 in zip(fts1, fts2)], dtype=torch.long
+            )
+            
+        else:
+            self.uides = [ft.uid for ft in fts]
+            self.input_idses = torch.as_tensor(
+                [ft.input_ids for ft in fts], dtype=torch.long
+            )
+            self.golds = torch.as_tensor([ft.gold for ft in fts], dtype=torch.long)
+            self.attention_maskes = torch.as_tensor(
+                [ft.attention_mask for ft in fts], dtype=torch.long
+            )
+            self.token_type_idses = torch.as_tensor(
+                [ft.token_type_ids for ft in fts], dtype=torch.long
+            )
+        
 
     def __len__(self):
         return self.golds.shape[0]

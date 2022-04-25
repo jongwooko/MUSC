@@ -48,27 +48,34 @@ class XNLIDataset(MultilingualRawDataset):
 
     def create_contents(self):
         # for mnli, we only use train (no dev)
-        # mnli_ = "./data/download/xnli/"
         mnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         entries = []
-        for file_ in ["train-en.tsv"]:
-            file_ = os.path.join(mnli_, file_)
-            sentence_pair_egs = self.mnli_parse(file_, "trn")
-            sentence_pair_egs = self.gen_mislabeled_data(sentence_pair_egs, self.conf.mislabel_type, self.conf.mislabel_ratio)
-            entries.extend(sentence_pair_egs)
         
         # xnli_ = "./data/download/xnli/"
         xnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         for lang_abbre in self.lang_abbres:
-            for which_split in ("dev", "test"):
+            for which_split in ("train", "dev", "test"):
                 file_ = os.path.join(xnli_, f"{which_split}-{lang_abbre}.tsv")
                 if which_split == "dev":
                     which_split = "val"
+                    entries.extend(self.xnli_parse(file_, which_split, lang_abbre))
                 elif which_split == "test":
                     which_split = "tst"
+                    entries.extend(self.xnli_parse(file_, which_split, lang_abbre))
+                elif which_split == "train":
+                    if lang_abbre == "en" and self.conf.trans_train:
+                        continue
+                    elif self.conf.trans_train:
+                        which_split = "trn"
+                        entries.extend(self.trans_parse(file_, which_split, lang_abbre))
+                    elif lang_abbre == "en":
+                        which_split = "trn"
+                        entries.extend(self.mnli_parse(file_, which_split, lang_abbre))
+                    else:
+                        which_split = "trn"
+                        entries.extend(self.xnli_parse(file_, which_split, lang_abbre))
                 else:
                     raise ValueError
-                entries.extend(self.xnli_parse(file_, which_split, lang_abbre))
 
         entries = sorted(entries, key=lambda x: x[0])  # groupby requires contiguous
         for language, triplets in itertools.groupby(entries, key=lambda x: x[0]):
@@ -118,6 +125,77 @@ class XNLIDataset(MultilingualRawDataset):
                     )
                 )
         assert len(sentence_pair_egs) == 392702, f"{len(sentence_pair_egs)}"
+        return sentence_pair_egs
+
+    def xnli_parse(self, input_file, which_split, lang_abbre):
+        sentence_pair_egs = []
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = line.strip().split("\t")
+                if len(line) == 3:
+                    text_a, text_b, label = line[0], line[1], line[2]
+                    assert label in self.get_labels(), f"{label}, {input_file}"
+                elif len(line) == 5:
+                    text_a, text_b, label = line[2], line[3], line[4]
+                    if label == "contradictory":
+                        label = "contradiction"
+                else:
+                    raise ValueError
+                sentence_pair_egs.append(
+                    (
+                        abbre2language[lang_abbre],
+                        which_split,
+                        SentencePairExample(
+                            uid=f"{abbre2language[lang_abbre]}-{idx}-{which_split}",
+                            text_a=text_a,
+                            text_b=text_b,
+                            label=label,
+                        ),
+                    ),
+                )
+        print(len(sentence_pair_egs), input_file)
+        return sentence_pair_egs
+    
+    def trans_parse(self, input_file, which_split, lang_abbre):
+        sentence_pair_egs = []
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = line.strip().split("\t")
+                if len(line) == 5:
+                    text1_a, text1_b = line[0], line[1]
+                    text2_a, text2_b, label = line[2], line[3], line[4]
+                    if label == "contradictory":
+                        label = "contradiction"                
+                    assert label in self.get_labels(), f"{label}, {input_file}"
+                else:
+                    raise ValueError
+                    
+                sentence_pair_egs.append(
+                    (
+                        abbre2language[lang_abbre],
+                        which_split,
+                        SentencePairExample(
+                            uid=f"english-{idx}-{which_split}",
+                            text_a=text1_a,
+                            text_b=text1_b,
+                            label=label,
+                        ),
+                    ),
+                )
+                    
+                sentence_pair_egs.append(
+                    (
+                        abbre2language[lang_abbre],
+                        which_split,
+                        SentencePairExample(
+                            uid=f"{abbre2language[lang_abbre]}-{idx}-{which_split}",
+                            text_a=text2_a,
+                            text_b=text2_b,
+                            label=label,
+                        ),
+                    ),
+                )
+        print(len(sentence_pair_egs), input_file)
         return sentence_pair_egs
     
     def gen_imbalanced_data(self, sentence_pair_egs, seq_num_per_cls):
@@ -177,30 +255,3 @@ class XNLIDataset(MultilingualRawDataset):
         
         else:
             raise NotImplementedError
-
-    def xnli_parse(self, input_file, which_split, lang_abbre):
-        sentence_pair_egs = []
-        with open(input_file, "r") as f:
-            for idx, line in enumerate(f):
-                line = line.strip().split("\t")
-                if len(line) == 3:
-                    text_a, text_b, label = line[0], line[1], line[2]
-                    assert label in self.get_labels(), f"{label}, {input_file}"
-                # elif len(line) == 2:
-                #     text_a, text_b, label = line[0], line[1], None
-                else:
-                    raise ValueError
-                sentence_pair_egs.append(
-                    (
-                        abbre2language[lang_abbre],
-                        which_split,
-                        SentencePairExample(
-                            uid=f"{abbre2language[lang_abbre]}-{idx}-{which_split}",
-                            text_a=text_a,
-                            text_b=text_b,
-                            label=label,
-                        ),
-                    ),
-                )
-        print(len(sentence_pair_egs), input_file)
-        return sentence_pair_egs
