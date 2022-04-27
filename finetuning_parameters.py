@@ -4,8 +4,8 @@ import argparse
 
 
 def get_args():
-    # ROOT_DIRECTORY = "/input/jongwooko/xlt"
-    ROOT_DIRECTORY = "./"
+    ROOT_DIRECTORY = "/input/jongwooko/xlt"
+#     ROOT_DIRECTORY = "./"
     RAW_DATA_DIRECTORY = join(ROOT_DIRECTORY, "data", "download")
     TRAINING_DIRECTORY = join(ROOT_DIRECTORY, "checkpoint_baseline")
 
@@ -50,6 +50,15 @@ def get_args():
     # translate-train-all
     parser.add_argument("--trans_train", action="store_true",
                         help="Whether to use translate-train")
+    
+    # methods
+    parser.add_argument("--alpha", type=float, default=0.5,
+                        help="Weights for source and target languages")
+    parser.add_argument("--use_proj", action="store_true",
+                        help="Whether to use projector in target languages")
+    parser.add_argument("--use_multi_projs", action="store_true",
+                        help="Whether to use projector for each target lanauge")
+    
     return parser
 
 

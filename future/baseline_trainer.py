@@ -62,12 +62,15 @@ class BaselineTuner(BaseTrainer):
         return scores
 
     def train(
-        self, model, tokenizer, data_iter, metric_name, adapt_loaders, hooks=None
+        self, model, tokenizer, data_iter, metric_name, adapt_loaders, hooks=None, projector=None
     ):
         print ("first of all")
         opt, model = self._init_model_opt(model)
         self.model = model
         self.model.train()
+        if projector is not None:
+            assert self.conf.use_proj
+            self.projs = projector
 
         print ("self.model.train()")
         
@@ -89,7 +92,7 @@ class BaselineTuner(BaseTrainer):
             batches_per_epoch = max(len(ti) for ti in trn_iters)
             for batch_index in range(1, batches_per_epoch + 1): # 
                 trn_loss = []
-                for ti in trn_iters:
+                for ti_idx, ti in enumerate(trn_iters):
                     try:
                         batched = next(ti)
                     except StopIteration:
@@ -98,36 +101,34 @@ class BaselineTuner(BaseTrainer):
                         batched
                     )
 
-                    # if len(golds.size()) == 2:
-                    #     for k in batched.keys():
-                    #         batched[k] = torch.cat([batched[k][:, 0], batched[k][:, 1]], dim=0)
-                    #     golds = torch.cat([golds[:, 0], golds[:, 1]], dim=0)
-                    # logits, feats, *_ = self._model_forward(self.model, **batched)
-                    # loss = self.criterion(logits, golds).mean()
-
                     if len(golds.size()) == 2:
-                        batched_eng = {}
-                        batched_oth = {}
+                        batched_src, batched_tgt = {}, {}
                         for k in batched.keys():
-                            batched_eng[k] = batched[k][:, 0]
-                            batched_oth[k] = batched[k][:, 1]
+                            batched_src[k] = batched[k][:, 0]
+                            batched_tgt[k] = batched[k][:, 1]
                         golds = golds[:, 0]
 
-                    logits_eng, cls_feats_eng, hidden_eng, *_ = self._model_forward(self.model, **batched_eng)
-                    logits_oth, cls_feats_oth, hidden_oth, *_ = self._model_forward(self.model, **batched_oth)
-
-                    # for i in range(13):
-                    #     print (i, hidden_eng[i].shape)
-                    #     print (i, hidden_oth[i].shape)
-
-                    # loss = self.criterion(logits_oth, golds).mean()
-                    alpha = 0.5
-                    loss = alpha * self.criterion(logits_eng, golds).mean() + \
-                           (1-alpha) * self.criterion(logits_oth, golds).mean() + \
-                           0.1 * vectorwise_mse_loss(cls_feats_eng, cls_feats_oth) + \
-                           0.1 * vectorwise_mse_loss(torch.mean(hidden_eng[0], axis=1), torch.mean(hidden_oth[0], axis=1))
-                    loss = loss / len(trn_iters)
-                    trn_loss.append(loss.item())
+                        logits_src, feats_src, hidden_src, *_ = self._model_forward(self.model, **batched_src)
+                        logits_tgt, feats_tgt, hidden_tgt, *_ = self._model_forward(self.model, **batched_tgt)
+                        
+                        if self.conf.use_proj and self.conf.use_multi_projs:
+                            feats_tgt = self.projs[ti_idx](feats_tgt)
+                        elif self.conf.use_proj:
+                            feats_tgt = self.projs(feats_tgt)
+                    
+                        alpha = self.conf.alpha
+                        loss = alpha * self.criterion(logits_src, golds).mean() + \
+                               (1-alpha) * self.criterion(logits_tgt, golds).mean() + \
+                               0.1 * vectorwise_mse_loss(feats_src.detach(), feats_tgt)
+#                                0.1 * vectorwise_mse_loss(torch.mean(hidden_eng[0], axis=1), torch.mean(hidden_oth[0], axis=1))
+                        loss = loss / len(trn_iters)
+                        trn_loss.append(loss.item())
+                        
+                    else:
+                        logits, feats, *_ = self._model_forward(self.model, **batched)
+                        loss = self.criterion(logits, golds).mean()
+                        trn_loss.append(loss.item())
+                        
                     loss.backward()
 
                 opt.step()

@@ -148,6 +148,19 @@ class BertForSequenceClassification(BertPreTrainedModel):
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         return logits
+    
+class Projector(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.fc1 = nn.Linear(dim, dim)
+        self.gelu = nn.GELU()
+        self.fc2 = nn.Linear(dim, dim)
+        
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.gelu(x)
+        x = self.fc2(x)
+        return x
 
 class LinearPredictor(BertPreTrainedModel):
     def __init__(self, bert_config, out_dim, dropout):

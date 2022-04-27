@@ -1,6 +1,6 @@
 from finetuning_parameters import get_args
 from future.baseline_trainer import BaselineTuner
-from future.modules import ptl2classes
+from future.modules import ptl2classes, Projector
 from future.hooks import EvaluationRecorder
 
 from data_loader.wrap_sampler import wrap_sampler
@@ -102,11 +102,15 @@ def init_task(conf):
             max_seq_len=conf.max_seq_len,
         )
     
-#     if conf.trans_train:
-#         for language in exp_languages:
-#             data_iter[language].trn_egs = task2pairiter(data_iter['english'], data_iter[language])
-        
     collocate_batch_fn = task2collocate_fn[conf.dataset_name]
+    
+    # projector
+    if conf.use_proj and conf.use_multi_projs:
+        projector = [Projector(model.config.hidden_size).to(device) for _ in range(len(conf.trn_languages))]
+    elif conf.use_proj:
+        projector = Projector(model.config.hidden_size).to(device)
+    else:
+        projector = None
     
     # apex
     model.to(device)
@@ -115,7 +119,7 @@ def init_task(conf):
                     gradient_predivide_factor=torch.distributed.get_world_size(),
                     delay_allreduce=True)
     
-    return (model, tokenizer, data_iter, metric_name, collocate_batch_fn)
+    return (model, projector, tokenizer, data_iter, metric_name, collocate_batch_fn)
 
 
 def init_hooks(conf, metric_name):
@@ -134,7 +138,7 @@ def main(conf):
     init_config(conf)
 
     # init model
-    model, tokenizer, data_iter, metric_name, collocate_batch_fn = init_task(conf)
+    model, projector, tokenizer, data_iter, metric_name, collocate_batch_fn = init_task(conf)
     adapt_loaders = {}
     for language, language_dataset in data_iter.items():
         # NOTE: the sample dataset are refered
@@ -161,6 +165,7 @@ def main(conf):
         metric_name=metric_name,
         adapt_loaders=adapt_loaders,
         hooks=hooks,
+        projector=projector,
     )
 
     # update the status.
