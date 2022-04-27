@@ -24,6 +24,8 @@ class BertForSequenceClassification(BertPreTrainedModel):
         super(BertForSequenceClassification, self).__init__(config)
         self.num_labels = config.num_labels
         
+        config.output_hidden_states = True # For extract all intermeiate hidden states
+
         self.bert = BertModel(config)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, self.config.num_labels)
@@ -48,7 +50,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
             head_mask=head_mask,
             inputs_embeds=inputs_embeds,
         )
-            
+
         sequence_output = outputs[0]
         pooled_output = outputs[1]
 

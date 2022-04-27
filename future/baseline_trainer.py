@@ -12,6 +12,12 @@ from collections import defaultdict, Counter
 from tqdm import tqdm
 
 
+
+def vectorwise_mse_loss(a, b):
+    loss = nn.functional.mse_loss(a, b, reduction='none')
+    loss = torch.mean(torch.sqrt(torch.sum(loss, axis=1)))
+    return loss
+
 class BaselineTuner(BaseTrainer):
     def __init__(self, conf, collocate_batch_fn, logger):
         super(BaselineTuner, self).__init__(conf, logger)
@@ -107,13 +113,20 @@ class BaselineTuner(BaseTrainer):
                             batched_oth[k] = batched[k][:, 1]
                         golds = golds[:, 0]
 
-                    logits_eng, feats_eng, *_ = self._model_forward(self.model, **batched_eng)
-                    logits_oth, feats_oth, *_ = self._model_forward(self.model, **batched_oth)
+                    logits_eng, cls_feats_eng, hidden_eng, *_ = self._model_forward(self.model, **batched_eng)
+                    logits_oth, cls_feats_oth, hidden_oth, *_ = self._model_forward(self.model, **batched_oth)
+
+                    # for i in range(13):
+                    #     print (i, hidden_eng[i].shape)
+                    #     print (i, hidden_oth[i].shape)
 
                     # loss = self.criterion(logits_oth, golds).mean()
-                    loss = self.criterion(logits_eng, golds).mean() + \
-                           self.criterion(logits_oth, golds).mean() + \
-                           0.1 * nn.functional.mse_loss(feats_oth, feats_eng)
+                    alpha = 0.5
+                    loss = alpha * self.criterion(logits_eng, golds).mean() + \
+                           (1-alpha) * self.criterion(logits_oth, golds).mean() + \
+                           0.1 * vectorwise_mse_loss(cls_feats_eng, cls_feats_oth) + \
+                           0.1 * vectorwise_mse_loss(torch.mean(hidden_eng[0], axis=1), torch.mean(hidden_oth[0], axis=1))
+                    loss = loss / len(trn_iters)
                     trn_loss.append(loss.item())
                     loss.backward()
 
