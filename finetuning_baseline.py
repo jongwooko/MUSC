@@ -113,13 +113,14 @@ def init_task(conf):
         projector = None
     
     # apex
+    model.projs = projector
     model.to(device)
     if conf.local_rank != -1:
         model = DDP(model, message_size=10000000,
                     gradient_predivide_factor=torch.distributed.get_world_size(),
                     delay_allreduce=True)
     
-    return (model, projector, tokenizer, data_iter, metric_name, collocate_batch_fn)
+    return (model, tokenizer, data_iter, metric_name, collocate_batch_fn)
 
 
 def init_hooks(conf, metric_name):
@@ -138,7 +139,7 @@ def main(conf):
     init_config(conf)
 
     # init model
-    model, projector, tokenizer, data_iter, metric_name, collocate_batch_fn = init_task(conf)
+    model, tokenizer, data_iter, metric_name, collocate_batch_fn = init_task(conf)
     adapt_loaders = {}
     for language, language_dataset in data_iter.items():
         # NOTE: the sample dataset are refered
@@ -165,7 +166,6 @@ def main(conf):
         metric_name=metric_name,
         adapt_loaders=adapt_loaders,
         hooks=hooks,
-        projector=projector,
     )
 
     # update the status.

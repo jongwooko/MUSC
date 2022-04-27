@@ -28,7 +28,7 @@ def get_args():
     parser.add_argument("--finetune_lr", type=float, default=5e-5)
 
     # speeding up inference
-    parser.add_argument("--inference_batch_size", type=int, default=512)
+    parser.add_argument("--inference_batch_size", type=int, default=128)
 
     # miscs
     parser.add_argument("--data_path", default=RAW_DATA_DIRECTORY, type=str)

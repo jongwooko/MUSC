@@ -38,7 +38,7 @@ class BaselineTuner(BaseTrainer):
             self._get_eval_recorder_hook(hook_container).best_state["best_state_dict"]
         ).cuda()
         scores = defaultdict(dict)
-        for language in tst_languages:
+        for lang_idx, language in enumerate(tst_languages):
             for split_name in ["tst_egs"]:
                 loader = getattr(adapt_loaders[language], split_name)
                 if self.conf.dataset_name in ["conll2003", "panx", "udpos"]:
@@ -56,21 +56,19 @@ class BaselineTuner(BaseTrainer):
                         loader,
                         self.collocate_batch_fn,
                         metric_name=metric_name,
+                        idx=lang_idx,
                     )
                 self.log_fn(f"{language} {split_name} score: {eval_res * 100:.1f}")
                 scores[language][split_name] = eval_res
         return scores
 
     def train(
-        self, model, tokenizer, data_iter, metric_name, adapt_loaders, hooks=None, projector=None
+        self, model, tokenizer, data_iter, metric_name, adapt_loaders, hooks=None
     ):
         print ("first of all")
         opt, model = self._init_model_opt(model)
         self.model = model
         self.model.train()
-        if projector is not None:
-            assert self.conf.use_proj
-            self.projs = projector
 
         print ("self.model.train()")
         
@@ -112,9 +110,11 @@ class BaselineTuner(BaseTrainer):
                         logits_tgt, feats_tgt, hidden_tgt, *_ = self._model_forward(self.model, **batched_tgt)
                         
                         if self.conf.use_proj and self.conf.use_multi_projs:
-                            feats_tgt = self.projs[ti_idx](feats_tgt)
+                            feats_tgt = self.model.projs[ti_idx](feats_tgt)
+                            logits_tgt = self.model.get_logits_from_last_hidden(feats_tgt)
                         elif self.conf.use_proj:
-                            feats_tgt = self.projs(feats_tgt)
+                            feats_tgt = self.model.projs(feats_tgt)
+                            logits_tgt = self.model.get_logits_from_last_hidden(feats_tgt)
                     
                         alpha = self.conf.alpha
                         loss = alpha * self.criterion(logits_src, golds).mean() + \
