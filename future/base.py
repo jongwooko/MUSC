@@ -56,13 +56,13 @@ class BaseTrainer(object):
             with torch.no_grad():
                 if self.model.projs is None or idx == 0:
                     logits, *_ = self._model_forward(model, **batched)
-                    preds = torch.argmax(logits, dim=-1)
                 elif type(self.model.projs) == list:
                     _, feats, *_ = self._model_forward(model, **batched)
-                    logits = self.get_logits_from_last_hidden(self.model.projs[idx-1](feats))
+                    logits = self.model.get_logits_from_last_hidden(self.model.projs[idx-1](feats))
                 else:
                     _, feats, *_ = self._model_forward(model, **batched)
-                    logits = self.get_logits_from_last_hidden(self.model.projs(feats))
+                    logits = self.model.get_logits_from_last_hidden(self.model.projs(feats))
+                preds = torch.argmax(logits, dim=-1)
             all_golds.extend(golds.tolist())
             all_preds.extend(preds.tolist())
         assert len(all_golds) == len(all_preds)
