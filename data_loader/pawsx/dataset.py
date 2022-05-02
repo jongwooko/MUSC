@@ -36,7 +36,7 @@ class PAWSXDataset(MultilingualRawDataset):
             for which_split in ("train", "dev", "test"):
                 file_ = os.path.join(pawsx_, f"{which_split}-{lang}.tsv")
                 if not os.path.exists(file_):
-                    print(f"[INFO]: skip {lang} {wsplit}: not such file")
+                    print(f"[INFO]: skip {lang} {which_split}: not such file")
                     continue
                 
                 if which_split == "dev":
