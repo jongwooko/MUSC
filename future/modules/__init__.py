@@ -3,9 +3,10 @@ from .nets import (BertForSequenceClassification, BertForMultipleChoice,
                    BertTokenizer, BertForSequenceTagging,
                    XLMRobertaForSequenceClassification, XLMRobertaForMultipleChoice,
                    XLMRobertaForTokenClassification, XLMRobertaTokenizer,
-                   Projector
+                   Projector, SupConBERT
 )
 
+from .losses import SupConLoss
 from .to_device import seqcls_batch_to_device, _Seqcls_task_container
 
 Classes = namedtuple("Classes", "seqcls seqtag multiplechoice tokenizer")

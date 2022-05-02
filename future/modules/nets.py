@@ -16,8 +16,9 @@ from transformers.tokenization_bert import BertTokenizer
 from transformers.tokenization_xlm_roberta import XLMRobertaTokenizer
 # from transformers.tokenization_roberta import RobertaTokenizer
 
-import torch.nn as nn
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 class BertForSequenceClassification(BertPreTrainedModel):
     def __init__(self, config):
@@ -290,3 +291,25 @@ class BertForSequenceTagging(LinearPredictor):
             torch.argmax(bert_out, dim=-1, keepdim=False),
             bert_out,
         )
+    
+class SupConBERT(nn.Module):
+    """backbone + projection head"""
+    def __init__(self, encoder, head='mlp', feat_dim=128):
+        super(SupConBERT, self).__init__()
+        self.encoder = encoder
+        if head == 'linear':
+            self.head = nn.Linear(encoder.config.hidden_size, feat_dim)
+        elif head == 'mlp':
+            self.head = nn.Sequential(
+                nn.Linear(encoder.config.hidden_size, encoder.config.hidden_size),
+                nn.ReLU(inplace=True),
+                nn.Linear(encoder.config.hidden_size, feat_dim)
+            )
+        else:
+            raise NotImplementedError(
+                'head not supported: {}'.format(head))
+
+    def forward(self, **x):
+        logit, feat, rep, *_ = self.encoder(**x)
+        feat = F.normalize(self.head(feat), dim=1)
+        return logit, feat

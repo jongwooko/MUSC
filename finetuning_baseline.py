@@ -1,6 +1,6 @@
 from finetuning_parameters import get_args
 from future.baseline_trainer import BaselineTuner
-from future.modules import ptl2classes, Projector
+from future.modules import ptl2classes, Projector, SupConBERT, SupConLoss
 from future.hooks import EvaluationRecorder
 
 from data_loader.wrap_sampler import wrap_sampler
@@ -104,6 +104,10 @@ def init_task(conf):
     
     collocate_batch_fn = task2collocate_fn[conf.dataset_name]
     
+    # supcon
+    if conf.use_supcon:
+        model = SupConBERT(model)
+    
     # projector
     if conf.use_proj and conf.use_multi_projs:
         projector = [Projector(model.config.hidden_size).to(device) for _ in range(len(conf.trn_languages))]
@@ -157,6 +161,9 @@ def main(conf):
     trainer = BaselineTuner(
         conf, collocate_batch_fn=collocate_batch_fn, logger=conf.logger
     )
+    
+    if conf.use_supcon:
+        trainer.supcon_fct = SupConLoss()
 
     conf.logger.log("Starting training/validation.")
     trainer.train(

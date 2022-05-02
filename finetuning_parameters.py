@@ -59,6 +59,12 @@ def get_args():
     parser.add_argument("--use_multi_projs", action="store_true",
                         help="Whether to use projector for each target lanauge")
     
+    # supcon methods
+    parser.add_argument("--lam", type=float, default=0.1,
+                        help="Weights for supcon loss")
+    parser.add_argument("--use_supcon", action="store_true",
+                        help="Whether to use supervised contrastive learning")
+    
     return parser
 
 
