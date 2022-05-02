@@ -133,6 +133,7 @@ class BaselineTuner(BaseTrainer):
                             loss = (1 - lam) * (alpha * self.criterion(logits_src, golds).mean() + \
                                    (1 - alpha) * self.criterion(logits_tgt, golds).mean()) + \
                                    lam * self.supcon_fct(feats, golds)
+                            loss = loss / len(trn_iters)
                             trn_loss.append(loss.item())
                         
                     else:
