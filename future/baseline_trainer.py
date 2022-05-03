@@ -136,7 +136,6 @@ class BaselineTuner(BaseTrainer):
                             loss = loss / len(trn_iters)
                             trn_loss.append(loss.item())
                                     
-                        
                     else:
                         logits, feats, *_ = self._model_forward(self.model, **batched)
                         loss = self.criterion(logits, golds).mean()

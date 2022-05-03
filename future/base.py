@@ -53,7 +53,13 @@ class BaseTrainer(object):
         all_golds, all_preds = [], []
         for batched in loader:
             batched, golds, *_ = collocate_batch_fn(batched, device=device)
+            
             with torch.no_grad():
+                if len(golds.size()) == 2:
+                    bsz = len(golds[:, 0])
+                    for k in batched.keys():
+                        batched[k] = torch.cat([batched[k][:, 0], batched[k][:, 1]], dim=0)
+                        
                 if self.model.projs is None or idx == 0:
                     logits, *_ = self._model_forward(model, **batched)
                 elif type(self.model.projs) == list:
@@ -62,6 +68,11 @@ class BaseTrainer(object):
                 else:
                     _, feats, *_ = self._model_forward(model, **batched)
                     logits = self.model.get_logits_from_last_hidden(self.model.projs(feats))
+                    
+                if len(golds.size()) == 2:
+                    logits = logits[:bsz] + logits[bsz:]
+                    golds = golds[:, 0]
+                    
                 preds = torch.argmax(logits, dim=-1)
             all_golds.extend(golds.tolist())
             all_preds.extend(preds.tolist())

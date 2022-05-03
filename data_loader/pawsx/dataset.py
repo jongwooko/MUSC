@@ -29,8 +29,8 @@ class PAWSXDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        # pawsx_ = "/input/jongwooko/xlt/data/download/pawsx/"
-        pawsx_ = "./data/download/pawsx/"
+        pawsx_ = "/input/jongwooko/xlt/data/download/pawsx/"
+#         pawsx_ = "./data/download/pawsx/"
         entries = []
         for lang in self.lang_abbres:
             for which_split in ("train", "dev", "test"):
@@ -43,8 +43,15 @@ class PAWSXDataset(MultilingualRawDataset):
                     which_split = "val"
                     entries.extend(self.pawsx_parse(file_, which_split, lang))
                 elif which_split == "test":
-                    which_split = "tst"
-                    entries.extend(self.pawsx_parse(file_, which_split, lang))
+                    if lang == "en":
+                        which_split = "tst"
+                        entries.extend(self.pawsx_parse(file_, which_split, lang))
+                    elif self.conf.trans_test:
+                        which_split = "tst"
+                        entries.extend(self.trans_parse(file_, which_split, lang))
+                    else:
+                        which_split = "tst"
+                        entries.extend(self.pawsx_parse(file_, which_split, lang))
                 elif which_split == "train":
                     if lang == "en" and self.conf.trans_train:
                         continue
@@ -96,13 +103,13 @@ class PAWSXDataset(MultilingualRawDataset):
                 if len(line) == 3:
                     text_a, text_b, label = line[0], line[1], line[2]
                     assert label in self.get_labels(), f"{label}, {input_file}"
+                elif len(line) == 5 and which_split == "trn":
+                    text_a, text_b, label = line[2], line[3], line[4]
+                elif len(line) == 5 and which_split == "tst":
+                    text_a, text_b, label = line[0], line[1], line[4]
                 # elif len(line) == 2:
                 #     text_a, text_b, label = line[0], line[1], None
                 else:
-                    print (len(line))
-                    print (lang)
-                    print (line)
-                    print (prev_line)
                     raise ValueError
                 portion_identifier = -1
                 sentence_egs.append(
@@ -118,7 +125,6 @@ class PAWSXDataset(MultilingualRawDataset):
                         ),
                     )
                 )
-                prev_line = line
         print(input_file, len(sentence_egs))
         return sentence_egs
     
@@ -129,17 +135,21 @@ class PAWSXDataset(MultilingualRawDataset):
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
-                if len(line) == 5:
+                if len(line) == 5 and which_split == "trn":
                     text1_a, text1_b = line[0], line[1]
                     text2_a, text2_b, label = line[2], line[3], line[4]
+                    assert label in self.get_labels(), f"{label}, {input_file}"
+                elif len(line) == 5 and which_split == "tst":
+                    text1_a, text1_b = line[2], line[3]
+                    text2_a, text2_b, label = line[0], line[1], line[4]
                     assert label in self.get_labels(), f"{label}, {input_file}"
                 # elif len(line) == 2:
                 #     text_a, text_b, label = line[0], line[1], None
                 else:
                     print (len(line))
-                    print (lang)
-                    print (line)
-                    print (prev_line)
+                    print (idx)
+                    for i in range(len(line)):
+                        print (line[i])
                     raise ValueError
                 portion_identifier = -1
                 sentence_egs.append(
@@ -169,8 +179,6 @@ class PAWSXDataset(MultilingualRawDataset):
                         ),
                     )
                 )
-
-                prev_line = line
         print(input_file, len(sentence_egs))
         return sentence_egs
 
