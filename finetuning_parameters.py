@@ -50,6 +50,8 @@ def get_args():
     # translate-train-all
     parser.add_argument("--trans_train", action="store_true",
                         help="Whether to use translate-train")
+    parser.add_argument("--trans_test", action="store_true",
+                        help="Whether to use translate-test")
     
     # methods
     parser.add_argument("--alpha", type=float, default=0.5,
