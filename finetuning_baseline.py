@@ -1,7 +1,9 @@
+from re import L
 from finetuning_parameters import get_args
 from future.baseline_trainer import BaselineTuner
 from future.modules import ptl2classes, Projector, SupConBERT, SupConLoss
 from future.hooks import EvaluationRecorder
+from future.losses import LabelSmoothingLoss
 
 from data_loader.wrap_sampler import wrap_sampler
 import data_loader.task_configs as task_configs
@@ -144,6 +146,17 @@ def main(conf):
 
     # init model
     model, tokenizer, data_iter, metric_name, collocate_batch_fn = init_task(conf)
+
+    # # load model
+    # if conf.dataset_name == 'pawsx':
+    #     PATH = "./checkpoint_baseline/pawsx/eng_1st/1651189733_model_task-pawsx_flr-1.0E-05_ftbs-32_ftepcs-5_sd-3_trnfast-False_evalevery-1544_tlang-en_vlang-en-zh-fr-de-ja-ko-es/state_dicts/best_state.pt"
+    # try:
+    #     model.load_state_dict(torch.load(PATH)['best_state_dict'], strict=True)
+    #     print ("best")
+    # except:
+    #     model.load_state_dict(torch.load(PATH), strict=True)
+    #     print ("last")
+
     adapt_loaders = {}
     for language, language_dataset in data_iter.items():
         # NOTE: the sample dataset are refered
@@ -159,7 +172,7 @@ def main(conf):
 
     conf.logger.log("Initialized tasks, recorders, and initing the trainer.")
     trainer = BaselineTuner(
-        conf, collocate_batch_fn=collocate_batch_fn, logger=conf.logger
+        conf, collocate_batch_fn=collocate_batch_fn, logger=conf.logger, criterion=LabelSmoothingLoss(classes=2, smoothing=0.1)
     )
     
     if conf.use_supcon:

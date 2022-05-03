@@ -19,8 +19,8 @@ def vectorwise_mse_loss(a, b):
     return loss
 
 class BaselineTuner(BaseTrainer):
-    def __init__(self, conf, collocate_batch_fn, logger):
-        super(BaselineTuner, self).__init__(conf, logger)
+    def __init__(self, conf, collocate_batch_fn, logger, criterion):
+        super(BaselineTuner, self).__init__(conf, logger, criterion)
         self.log_fn("Init trainer.")
         self.collocate_batch_fn = collocate_batch_fn
         self.model_ptl = conf.ptl
@@ -131,14 +131,15 @@ class BaselineTuner(BaseTrainer):
                             
                             alpha, lam = self.conf.alpha, self.conf.lam
                             loss = (1 - lam) * (alpha * self.criterion(logits_src, golds).mean() + \
-                                    (1 - alpha) * self.criterion(logits_tgt, golds).mean()) + \
-                                    lam * self.supcon_fct(feats, golds)
+                                   (1 - alpha) * self.criterion(logits_tgt, golds).mean()) + \
+                                   lam * self.supcon_fct(feats, golds)
                             loss = loss / len(trn_iters)
                             trn_loss.append(loss.item())
-                                    
+                        
                     else:
                         logits, feats, *_ = self._model_forward(self.model, **batched)
                         loss = self.criterion(logits, golds).mean()
+                        loss = loss / len(trn_iters)
                         trn_loss.append(loss.item())
                         
                     loss.backward()
