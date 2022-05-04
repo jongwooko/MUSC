@@ -42,15 +42,36 @@ class BertForSequenceClassification(BertPreTrainedModel):
         head_mask=None,
         inputs_embeds=None,
         labels=None,
+        mix_ratio=None
     ):
-        outputs = self.bert(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-            head_mask=head_mask,
-            inputs_embeds=inputs_embeds,
-        )
+        
+        if mix_ratio is None:
+            outputs = self.bert(
+                input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+                head_mask=head_mask,
+                inputs_embeds=inputs_embeds,
+            )
+        
+        else:
+            embedding_output = self.bert.get_embedding_output(
+                input_ids,
+                token_type_ids=token_type_ids,
+                position_ids=position_ids,
+            )
+            
+            bsz = embedding_output.size(0)
+            rev = bsz - torch.arange(bsz) - 1
+            embedding_output = mix_ratio * embedding_output + (1 - mix_ratio) * embedding_output[rev]
+            
+            device = attention_mask.device
+            attention_mask1 = attention_mask
+            attention_mask2 = attention_mask[rev]
+            attention_mask = torch.where(attention_mask1 + attention_mask2 == 0, 
+                                         torch.zeros(attention_mask1.size()).to(device), torch.ones(attention_mask2.size()).to(device))
+            outputs = self.bert.get_bert_output(embedding_output, attention_mask=attention_mask)
 
         sequence_output = outputs[0]
         pooled_output = outputs[1]
@@ -71,84 +92,6 @@ class BertForSequenceClassification(BertPreTrainedModel):
             outputs = (loss,) + + outputs
 
         return outputs  # (loss), logits, (hidden_states), (attentions)
-    
-    def get_embedding_output(
-        self,
-        input_ids,
-        token_type_ids=None,
-        position_ids=None,
-    ):
-        return self.bert.get_embedding_output(input_ids=input_ids, token_type_ids=token_type_ids,
-                                              position_ids=position_ids)
-    
-    def get_logits_from_embedding_output(
-        self,
-        embedding_output,
-        attention_mask=None,
-        labels=None
-    ):
-        outputs = self.bert.get_bert_output(embedding_output, attention_mask=attention_mask)
-        pooled_output = outputs[1]
-        
-        pooled_output = self.dropout(pooled_output)
-        logits = self.classifier(pooled_output)
-        outputs = (logits,) + outputs[2:]
-        if labels is not None:
-            if self.num_labels == 1:
-                #  We are doing regression
-                loss_fct = MSELoss()
-                loss = loss_fct(logits.view(-1), labels.view(-1))
-            else:
-                loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-            outputs = (loss,) + outputs
-        return outputs  # (loss), logits, (hidden_states), (attentions)
-    
-    def get_last_hidden_from_embedding_output(
-        self,
-        embedding_output,
-        attention_mask=None,
-        labels=None
-    ):
-        outputs = self.bert.get_bert_output(embedding_output, attention_mask=attention_mask)
-        sequence_output = outputs[0]
-        
-        # sequence classifiers only use [CLS] tokens for classification task.
-        # Previous research (A closer look at few-shot crosslingual transfer: the choices of shots matters)
-        # show that the training FC+Pooler performs the best among the for various number of shots. 
-        first_token_tensor = sequence_output[:, 0]
-        return first_token_tensor
-    
-    def get_last_hidden(
-        self,
-        input_ids=None,
-        attention_mask=None,
-        token_type_ids=None,
-        position_ids=None,
-        head_mask=None,
-        inputs_embeds=None,
-    ):
-        outputs = self.bert(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-            head_mask=head_mask,
-            inputs_embeds=inputs_embeds
-        )
-        sequence_output = outputs[0]
-        first_token_tensor = sequence_output[:, 0]
-        return first_token_tensor
-    
-    def get_logits_from_last_hidden(
-        self,
-        first_token_tensor,
-    ):
-        pooled_output = self.bert.pooler.dense(first_token_tensor)
-        pooled_output = self.bert.pooler.activation(pooled_output)
-        pooled_output = self.dropout(pooled_output)
-        logits = self.classifier(pooled_output)
-        return logits
     
 class Projector(nn.Module):
     def __init__(self, dim):

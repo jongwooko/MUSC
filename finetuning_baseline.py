@@ -46,7 +46,6 @@ from torch.utils.data.distributed import DistributedSampler
 #     max_seq_len=128,
 # )
 
-
 def init_task(conf):
     
     assert (torch.cuda.is_available())
@@ -172,8 +171,11 @@ def main(conf):
 
     conf.logger.log("Initialized tasks, recorders, and initing the trainer.")
     trainer = BaselineTuner(
-        conf, collocate_batch_fn=collocate_batch_fn, logger=conf.logger, criterion=LabelSmoothingLoss(classes=2, smoothing=0.1)
+        conf, collocate_batch_fn=collocate_batch_fn, logger=conf.logger, criterion=torch.nn.CrossEntropyLoss()
     )
+#     trainer = BaselineTuner(
+#         conf, collocate_batch_fn=collocate_batch_fn, logger=conf.logger, criterion=LabelSmoothingLoss(classes=2, smoothing=0.1)
+#     )
     
     if conf.use_supcon:
         trainer.supcon_fct = SupConLoss()

@@ -66,6 +66,8 @@ def get_args():
                         help="Weights for supcon loss")
     parser.add_argument("--use_supcon", action="store_true",
                         help="Whether to use supervised contrastive learning")
+    parser.add_argument("--use_mix", action="store_true",
+                        help="Whether to use mixup with supervised contrastive learning")
     
     return parser
 

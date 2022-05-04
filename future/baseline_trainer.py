@@ -125,16 +125,49 @@ class BaselineTuner(BaseTrainer):
                             trn_loss.append(loss.item())
                             
                         else:
-                            logits_src, feats_src = self._model_forward(self.model, **batched_src)
-                            logits_tgt, feats_tgt = self._model_forward(self.model, **batched_tgt)
-                            feats = torch.cat([feats_src.unsqueeze(1), feats_tgt.unsqueeze(1)], dim=1)
-                            
-                            alpha, lam = self.conf.alpha, self.conf.lam
-                            loss = (1 - lam) * (alpha * self.criterion(logits_src, golds).mean() + \
-                                   (1 - alpha) * self.criterion(logits_tgt, golds).mean()) + \
-                                   lam * self.supcon_fct(feats, golds)
-                            loss = loss / len(trn_iters)
-                            trn_loss.append(loss.item())
+                            if not self.conf.use_mix:
+                                logits_src, feats_src = self._model_forward(self.model, **batched_src)
+                                logits_tgt, feats_tgt = self._model_forward(self.model, **batched_tgt)
+                                feats = torch.cat([feats_src.unsqueeze(1), feats_tgt.unsqueeze(1)], dim=1)
+
+                                alpha, lam = self.conf.alpha, self.conf.lam
+                                loss = (1 - lam) * (alpha * self.criterion(logits_src, golds).mean() + \
+                                       (1 - alpha) * self.criterion(logits_tgt, golds).mean()) + \
+                                       lam * self.supcon_fct(feats, golds)
+                                loss = loss / len(trn_iters)
+                                trn_loss.append(loss.item())
+                                
+                            else:
+                                alpha, lam = self.conf.alpha, self.conf.lam
+                                logits_src, feats_src = self._model_forward(self.model, **batched_src)
+                                logits_tgt, feats_tgt = self._model_forward(self.model, **batched_tgt)
+                                feats = torch.cat([feats_src.unsqueeze(1), feats_tgt.unsqueeze(1)], dim=1)
+                                
+                                bsz = len(golds)
+                                rev = bsz - torch.arange(bsz) - 1
+                                
+                                w_src_mix = np.random.random() # beta distribution with parameter 1
+                                batched_src["mix_ratio"] = w_src_mix
+                                logits_src_m, feats_src_m = self._model_forward(self.model, **batched_src)
+                                feats_sm = torch.cat([feats_src_m.unsqueeze(1), feats_tgt.unsqueeze(1)], dim=1)
+                                
+                                w_tgt_mix = np.random.random()
+                                batched_tgt["mix_ratio"] = w_tgt_mix
+                                logits_tgt_m, feats_tgt_m = self._model_forward(self.model, **batched_src)
+                                feats_tm = torch.cat([feats_src.unsqueeze(1), feats_tgt_m.unsqueeze(1)], dim=1)
+                                
+                                loss = (1 - lam) * ((0.5 * (self.criterion(logits_src, golds).mean() + \
+                                                            w_src_mix * self.criterion(logits_src_m, golds).mean() + \
+                                                            (1 - w_src_mix) * self.criterion(logits_src_m, golds[rev]).mean())) + \
+                                                    (0.5 * (self.criterion(logits_tgt, golds).mean() + \
+                                                            w_tgt_mix * self.criterion(logits_tgt_m, golds).mean() + \
+                                                            (1 - w_tgt_mix) * self.criterion(logits_tgt_m, golds[rev]).mean())))
+                                loss += lam * self.supcon_fct(feats, golds)
+                                loss += lam * (w_src_mix * self.supcon_fct(feats_sm, golds) + (1 - w_src_mix) * self.supcon_fct(feats_sm, golds[rev]))
+                                loss += lam * (w_tgt_mix * self.supcon_fct(feats_tm, golds) + (1 - w_tgt_mix) * self.supcon_fct(feats_tm, golds[rev]))
+                                
+                                loss = loss / len(trn_iters)
+                                trn_loss.append(loss.item())
                         
                     else:
                         logits, feats, *_ = self._model_forward(self.model, **batched)
@@ -190,7 +223,7 @@ class BaselineTuner(BaseTrainer):
                     model, val_loader, self.collocate_batch_fn, metric_name=metric_name, idx=lang_idx,
                 )
                 all_scores[val_language].append((split_, eval_res))
-                if split_ == "val_egs":
+                if split_ == "tst_egs":
                     val_scores.append(eval_res)
         assert len(val_scores) == len(self.conf.eval_languages) # trn
         return (np.mean(val_scores), all_scores)
