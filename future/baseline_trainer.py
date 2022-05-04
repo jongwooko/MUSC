@@ -149,12 +149,14 @@ class BaselineTuner(BaseTrainer):
                                 w_src_mix = np.random.random() # beta distribution with parameter 1
                                 batched_src["mix_ratio"] = w_src_mix
                                 logits_src_m, feats_src_m = self._model_forward(self.model, **batched_src)
-                                feats_sm = torch.cat([feats_src_m.unsqueeze(1), feats_tgt.unsqueeze(1)], dim=1)
+                                feats_smn = torch.cat([feats_src_m.unsqueeze(1), feats_tgt.unsqueeze(1)], dim=1) # source mixture normal
+                                feats_smr = torch.cat([feats_src_m.unsqueeze(1), feats_tgt[rev].unsqueeze(1)], dim=1) # source mixture reverse
                                 
                                 w_tgt_mix = np.random.random()
                                 batched_tgt["mix_ratio"] = w_tgt_mix
-                                logits_tgt_m, feats_tgt_m = self._model_forward(self.model, **batched_src)
-                                feats_tm = torch.cat([feats_src.unsqueeze(1), feats_tgt_m.unsqueeze(1)], dim=1)
+                                logits_tgt_m, feats_tgt_m = self._model_forward(self.model, **batched_tgt)
+                                feats_tmn = torch.cat([feats_src.unsqueeze(1), feats_tgt_m.unsqueeze(1)], dim=1) # source mixture normal
+                                feats_tmr = torch.cat([feats_src[rev].unsqueeze(1), feats_tgt_m.unsqueeze(1)], dim=1) # source mixture reverse
                                 
                                 loss = (1 - lam) * ((0.5 * (self.criterion(logits_src, golds).mean() + \
                                                             w_src_mix * self.criterion(logits_src_m, golds).mean() + \
@@ -163,8 +165,8 @@ class BaselineTuner(BaseTrainer):
                                                             w_tgt_mix * self.criterion(logits_tgt_m, golds).mean() + \
                                                             (1 - w_tgt_mix) * self.criterion(logits_tgt_m, golds[rev]).mean())))
                                 loss += lam * self.supcon_fct(feats, golds)
-                                loss += lam * (w_src_mix * self.supcon_fct(feats_sm, golds) + (1 - w_src_mix) * self.supcon_fct(feats_sm, golds[rev]))
-                                loss += lam * (w_tgt_mix * self.supcon_fct(feats_tm, golds) + (1 - w_tgt_mix) * self.supcon_fct(feats_tm, golds[rev]))
+                                loss += lam * (w_src_mix * self.supcon_fct(feats_smn, golds) + (1 - w_src_mix) * self.supcon_fct(feats_smr, golds[rev]))
+                                loss += lam * (w_tgt_mix * self.supcon_fct(feats_tmn, golds) + (1 - w_tgt_mix) * self.supcon_fct(feats_tmr, golds[rev]))
                                 
                                 loss = loss / len(trn_iters)
                                 trn_loss.append(loss.item())
