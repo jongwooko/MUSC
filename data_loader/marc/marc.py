@@ -11,7 +11,7 @@ from ..data_configs import abbre2language
 
 
 class MARCDataset(MultilingualRawDataset):
-    def __init__(self):
+    def __init__(self, conf):
         self.name = "marc"
         self.lang_abbres = ["de", "en", "es", "fr", "zh", "ja"]
         self.metrics = ["accuracy", "MAE"]
@@ -29,7 +29,8 @@ class MARCDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        marc_ = "./data/marc/"
+        marc_ = "/input/jongwooko/xlt/data/download/marc/"
+#         marc_ = "./data/download/marc/"
         entries = []
         for lang in self.lang_abbres:
             for which_split, wsplit in (
