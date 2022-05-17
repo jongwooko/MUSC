@@ -172,10 +172,51 @@ class BaselineTuner(BaseTrainer):
                                 trn_loss.append(loss.item())
                         
                     else:
-                        logits, feats, *_ = self._model_forward(self.model, **batched)
-                        loss = self.criterion(logits, golds).mean()
-                        loss = loss / len(trn_iters)
-                        trn_loss.append(loss.item())
+                        if self.conf.use_mix and self.conf.use_supcon:
+                            lam = self.conf.lam
+                            
+                            logits, feats, *_ = self._model_forward(self.model, **batched)
+                            
+                            bsz = len(golds)
+                            rev = bsz - torch.arange(bsz) - 1
+                            
+                            w_mix = np.random.random()
+                            batched["mix_ratio"] = w_mix
+                            logits_m, feats_m, *_ = self._model_forward(self.model, **batched)
+                            
+                            feats_mn = torch.cat([feats.unsqueeze(1), feats_m.unsqueeze(1)], dim=1)
+                            feats_mr = torch.cat([feats[rev].unsqueeze(1), feats_m.unsqueeze(1)], dim=1)
+                            
+                            loss = (1 - lam) * (self.criterion(logits, golds).mean() + \
+                                                w_mix * self.criterion(logits_m, golds).mean() + \
+                                                (1 - w_mix) * self.criterion(logits_m, golds[rev]).mean()) + \
+                                   lam * (w_mix * self.supcon_fct(feats_mn, golds) + (1 - w_mix) * self.supcon_fct(feats_mr, golds[rev]))
+                            
+                        elif self.conf.use_mix:
+                            logits, feats, *_ = self._model_forward(self.model, **batched)
+                            
+                            bsz = len(golds)
+                            rev = bsz - torch.arange(bsz) - 1
+                            
+                            w_mix = np.random.random()
+                            batched["mix_ratio"] = w_mix
+                            logits_m, feats_m, *_ = self._model_forward(self.model, **batched)
+                            
+                            loss = self.criterion(logits, golds).mean() + \
+                                    w_mix * self.criterion(logits_m, golds).mean() + \
+                                    (1 - w_mix) * self.criterion(logits_m, golds[rev]).mean()
+                        elif self.conf.use_supcon:
+                            lam = self.conf.lam
+                            logits, feats, *_ = self._model_forward(self.model, **batched)
+                            loss = (1 - lam) * self.criterion(logits, golds).mean() + \
+                                   lam * self.supcon_fct(feats.unsqueeze(1), golds)
+                            loss = loss / len(trn_iters)
+                            trn_loss.append(loss.item())
+                        else:
+                            logits, feats, *_ = self._model_forward(self.model, **batched)
+                            loss = self.criterion(logits, golds).mean()
+                            loss = loss / len(trn_iters)
+                            trn_loss.append(loss.item())
                         
                     loss.backward()
 
