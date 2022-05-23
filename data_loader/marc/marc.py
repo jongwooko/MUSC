@@ -13,6 +13,7 @@ from ..data_configs import abbre2language
 class MARCDataset(MultilingualRawDataset):
     def __init__(self, conf):
         self.name = "marc"
+        self.conf = conf
         self.lang_abbres = ["de", "en", "es", "fr", "zh", "ja"]
         self.metrics = ["accuracy", "MAE"]
         self.label_list = [1, 2, 3, 4, 5]
@@ -39,13 +40,23 @@ class MARCDataset(MultilingualRawDataset):
                 ("test", "tst"),
             ):
                 if which_split == "train":
-                    which_split = os.path.join("train", f"dataset_{lang}_train.json")
+                    if lang != "en" and self.conf.trans_train:
+                        which_split = os.path.join("train", f"dataset_en_{lang}_train.json")
+                    else:
+                        which_split = os.path.join("train", f"dataset_{lang}_train.json")
                 elif which_split == "dev":
                     which_split = os.path.join("dev", f"dataset_{lang}_dev.json")
                 elif which_split == "test":
-                    which_split = os.path.join("test", f"dataset_{lang}_test.json")
+                    if lang != "en" and self.conf.trans_train:
+                        which_split = os.path.join("test", f"dataset_{lang}_en_test.json")
+                    else:
+                        which_split = os.path.join("test", f"dataset_{lang}_test.json")                   
                 file_ = os.path.join(marc_, which_split)
-                entries.extend(self.marc_parse(lang, file_, wsplit))
+                
+                if f"en_{lang}" in which_split or f"{lang}_en" in which_split:
+                    entries.extend(self.marc_trans_parse(lang, file_, wsplit))
+                else:
+                    entries.extend(self.marc_parse(lang, file_, wsplit))
         entries = sorted(entries, key=lambda x: x[0])  # groupby requires contiguous
         for language, triplets in itertools.groupby(entries, key=lambda x: x[0]):
             # get examples in this language
@@ -88,6 +99,56 @@ class MARCDataset(MultilingualRawDataset):
                 text_b = f"{title} . {category}"
 
                 portion_identifier = -1
+                sentence_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentencePairExample(
+                            uid=f"{language}-{idx}-{which_split}",
+                            text_a=text_a,
+                            text_b=text_b,
+                            label=label,
+                            portion_identifier=portion_identifier,
+                        ),
+                    )
+                )
+        return sentence_egs
+        
+    def marc_trans_parse(self, lang, input_file, which_split):
+        sentence_egs = []
+        language = abbre2language[lang]
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = json.loads(line.strip())
+                label = int(line["stars"])
+                # assert line["language"] == lang
+                assert label in self.get_labels(), f"{label}, {input_file}"
+                category = line["product_category"].strip()
+                title = line["review_title"].strip()
+                text_a = line["review_body"].strip()
+                text_b = f"{title} . {category}"
+
+                portion_identifier = -1
+                sentence_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentencePairExample(
+                            uid=f"{language}-{idx}-{which_split}",
+                            text_a=text_a,
+                            text_b=text_b,
+                            label=label,
+                            portion_identifier=portion_identifier,
+                        ),
+                    )
+                )
+                
+                # TODO : language check
+                category = line["product_category"].strip()
+                title = line["trans_review_title"].strip()
+                text_a = line["trans_review_body"].strip()
+                text_b = f"{title} . {category}"
+                
                 sentence_egs.append(
                     (
                         language,
