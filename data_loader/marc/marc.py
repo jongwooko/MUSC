@@ -47,7 +47,7 @@ class MARCDataset(MultilingualRawDataset):
                 elif which_split == "dev":
                     which_split = os.path.join("dev", f"dataset_{lang}_dev.json")
                 elif which_split == "test":
-                    if lang != "en" and self.conf.trans_train:
+                    if lang != "en" and self.conf.trans_test:
                         which_split = os.path.join("test", f"dataset_{lang}_en_test.json")
                     else:
                         which_split = os.path.join("test", f"dataset_{lang}_test.json")                   
@@ -112,6 +112,7 @@ class MARCDataset(MultilingualRawDataset):
                         ),
                     )
                 )
+        print(input_file, len(sentence_egs))
         return sentence_egs
         
     def marc_trans_parse(self, lang, input_file, which_split):
@@ -123,43 +124,85 @@ class MARCDataset(MultilingualRawDataset):
                 label = int(line["stars"])
                 # assert line["language"] == lang
                 assert label in self.get_labels(), f"{label}, {input_file}"
-                category = line["product_category"].strip()
-                title = line["review_title"].strip()
-                text_a = line["review_body"].strip()
-                text_b = f"{title} . {category}"
+                if which_split == "trn":
+                    category = line["product_category"].strip()
+                    title = line["review_title"].strip()
+                    text_a = line["review_body"].strip()
+                    text_b = f"{title} . {category}"
 
-                portion_identifier = -1
-                sentence_egs.append(
-                    (
-                        language,
-                        which_split,
-                        SentencePairExample(
-                            uid=f"{language}-{idx}-{which_split}",
-                            text_a=text_a,
-                            text_b=text_b,
-                            label=label,
-                            portion_identifier=portion_identifier,
-                        ),
+                    portion_identifier = -1
+                    sentence_egs.append(
+                        (
+                            language,
+                            which_split,
+                            SentencePairExample(
+                                uid=f"english-{idx}-{which_split}",
+                                text_a=text_a,
+                                text_b=text_b,
+                                label=label,
+                                portion_identifier=portion_identifier,
+                            ),
+                        )
                     )
-                )
-                
-                # TODO : language check
-                category = line["product_category"].strip()
-                title = line["trans_review_title"].strip()
-                text_a = line["trans_review_body"].strip()
-                text_b = f"{title} . {category}"
-                
-                sentence_egs.append(
-                    (
-                        language,
-                        which_split,
-                        SentencePairExample(
-                            uid=f"{language}-{idx}-{which_split}",
-                            text_a=text_a,
-                            text_b=text_b,
-                            label=label,
-                            portion_identifier=portion_identifier,
-                        ),
+
+                    category = line["product_category"].strip()
+                    title = line["trans_review_title"].strip()
+                    text_a = line["trans_review_body"].strip()
+                    text_b = f"{title} . {category}"
+
+                    sentence_egs.append(
+                        (
+                            language,
+                            which_split,
+                            SentencePairExample(
+                                uid=f"{language}-{idx}-{which_split}",
+                                text_a=text_a,
+                                text_b=text_b,
+                                label=label,
+                                portion_identifier=portion_identifier,
+                            ),
+                        )
                     )
-                )
+                elif which_split == "tst":
+                    category = line["product_category"].strip()
+                    title = line["trans_review_title"].strip()
+                    text_a = line["trans_review_body"].strip()
+                    text_b = f"{title} . {category}"
+                    
+                    portion_identifier = -1
+                    sentence_egs.append(
+                        (
+                            language,
+                            which_split,
+                            SentencePairExample(
+                                uid=f"english-{idx}-{which_split}",
+                                text_a=text_a,
+                                text_b=text_b,
+                                label=label,
+                                portion_identifier=portion_identifier,
+                            ),
+                        )
+                    )
+
+                    category = line["product_category"].strip()
+                    title = line["review_title"].strip()
+                    text_a = line["review_body"].strip()
+                    text_b = f"{title} . {category}"
+
+                    sentence_egs.append(
+                        (
+                            language,
+                            which_split,
+                            SentencePairExample(
+                                uid=f"{language}-{idx}-{which_split}",
+                                text_a=text_a,
+                                text_b=text_b,
+                                label=label,
+                                portion_identifier=portion_identifier,
+                            ),
+                        )
+                    )
+                else:
+                    raise ValueError
+        print(input_file, len(sentence_egs))
         return sentence_egs

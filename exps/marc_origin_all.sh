@@ -1,9 +1,9 @@
 #!/bin/bash
 CUDA_VISIBLE_DEVICES=1 python finetuning_baseline.py --dataset_name marc \
-                              --experiment debug \
+                              --experiment ce_origin_trans \
                               --trn_languages english,german,chinese,french,japanese,spanish \
                               --eval_languages english \
-                              --finetune_epochs 10 \
+                              --finetune_epochs 2 \
                               --finetune_batch_size 32 \
                               --eval_every_batch 300 \
                               --override False \
