@@ -6,12 +6,13 @@ from ..common import (
 import itertools
 import os
 from collections import OrderedDict
-from ..data_configs import abbre2language
+from ..data_configs import abbre2language, language2abbre
 
 
 class MLDocDataset(MultilingualRawDataset):
-    def __init__(self):
+    def __init__(self, conf):
         self.name = "mldoc"
+        self.conf = conf
         self.lang_abbres = ["de", "en", "es", "fr", "it", "ru", "zh", "ja"]
         self.metrics = ["accuracy"]
         self.label_list = ["CCAT", "ECAT", "GCAT", "MCAT"]
@@ -28,21 +29,23 @@ class MLDocDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        mldoc_ = "./data/mldoc/"
+#         mldoc_ = "./data/mldoc/"
+        mldoc_ = "/input/jongwooko/xlt/data/download/mldoc/"
         entries = []
-        for lang in self.lang_abbres:
+        for abbr in self.lang_abbres:
             for which_split, wsplit in (
                 ("train", "trn"),
                 ("dev", "val"),
                 ("test", "tst"),
             ):
+                lang = abbre2language[abbr]
                 if which_split == "train":
                     which_split = f"{lang}.train.{self.num_trn_examples}"
                 if which_split == "dev":
                     which_split = f"{lang}.dev"
                 if which_split == "test":
                     which_split = f"{lang}.test"
-                file_ = os.path.join(mldoc_, lang, which_split)
+                file_ = os.path.join(mldoc_, which_split)
                 entries.extend(self.mldoc_parse(lang, file_, wsplit))
         entries = sorted(entries, key=lambda x: x[0])  # groupby requires contiguous
         for language, triplets in itertools.groupby(entries, key=lambda x: x[0]):
@@ -74,6 +77,7 @@ class MLDocDataset(MultilingualRawDataset):
 
     def mldoc_parse(self, lang, input_file, which_split):
         sentence_egs = []
+        lang = language2abbre[lang]
         language = abbre2language[lang]
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
