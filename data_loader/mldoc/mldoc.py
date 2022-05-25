@@ -18,7 +18,7 @@ class MLDocDataset(MultilingualRawDataset):
         self.label_list = ["CCAT", "ECAT", "GCAT", "MCAT"]
         self.label2idx = {"CCAT": 0, "ECAT": 1, "GCAT": 2, "MCAT": 3}
         self.num_labels = 4
-        self.num_trn_examples = 10000
+        self.num_trn_examples = 1000 # 1000, 2000, 5000, 10000
         self.contents = OrderedDict()
         self.create_contents()
 
@@ -82,8 +82,7 @@ class MLDocDataset(MultilingualRawDataset):
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
-                if lang != "en":
-                    assert len(line) == 2
+                
                 portion_identifier = -1
                 label = line[0].strip()
                 text_a = line[1].strip()
