@@ -6,6 +6,7 @@ from .ner import PANXDataset # CONLL2003Dataset
 from .pawsx import PAWSXDataset
 from .NLI import XNLIDataset
 from .pos import UDPOSDataset
+from .cls import CLSDataset
 
 # from sampled_data_loader.mldoc.mldoc import SampledMLDocDataset
 
@@ -19,12 +20,14 @@ task2dataset = {
 #     "mrpc": MRPCDataset,
     "panx": PANXDataset,
     "udpos": UDPOSDataset,
+    "cls": CLSDataset,
 }
 
 task2labelsetsize = {
     "mrpc": 2,
     "mldoc": 4,
     "marc": 5,
+    "cls": 2,
     "conll2003": -1,
     "panx": -1,
     "udpos": -1,

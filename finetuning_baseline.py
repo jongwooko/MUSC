@@ -75,7 +75,7 @@ def init_task(conf):
         model = classes.seqtag.from_pretrained(
             conf.model, out_dim=raw_dataset.num_labels
         )
-    elif conf.dataset_name in ["mldoc", "marc", "pawsx", "argustan", "xnli"]:
+    elif conf.dataset_name in ["mldoc", "marc", "pawsx", "argustan", "xnli", "cls"]:
         model = classes.seqcls.from_pretrained(
             conf.model, num_labels=raw_dataset.num_labels
         )

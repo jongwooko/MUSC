@@ -12,6 +12,7 @@ task2dataiter = {
     "conll2003": TaggingDataIter,
     "panx": TaggingDataIter,
     "udpos": TaggingDataIter,
+    "cls": SeqClsDataIter,
 }
 
 task2datadir = {
@@ -25,6 +26,7 @@ task2datadir = {
     "xnli": "data/NLI/",
     "panx": "data/panx/",
     "udpos": "data/udpos/",
+    "cls": "data/cls"
 }
 
 LANGUAGE2ID = {
@@ -50,7 +52,8 @@ TASK2ID = {
     "conll2003": 6,
     "pawsx": 7,
     "panx": 8,
-    "udpos": 9
+    "udpos": 9,
+    "cls": 10,
 }
 
 SPLIT2ID = {"trn": 0, "val": 1, "tst": 2}

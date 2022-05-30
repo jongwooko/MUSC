@@ -39,4 +39,5 @@ task2collocate_fn = {
     "xnli": seqcls_collocate,
     "panx": tagging_batch_to_device,
     "udpos": tagging_batch_to_device,
+    "cls": seqcls_collocate,
 }
