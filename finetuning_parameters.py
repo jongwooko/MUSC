@@ -69,6 +69,12 @@ def get_args():
     parser.add_argument("--use_mix", action="store_true",
                         help="Whether to use mixup with supervised contrastive learning")
     
+    # translate
+    parser.add_argument("--test_mt", action="store_true")
+    parser.add_argument("--test_bt", action="store_true")
+    parser.add_argument("--train_mt", action="store_true")
+    parser.add_argument("--train_bt", action="store_true")
+    
     return parser
 
 

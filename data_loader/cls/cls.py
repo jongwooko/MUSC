@@ -36,13 +36,39 @@ class CLSDataset(MultilingualRawDataset):
                 ("train", "trn"),
                 ("test", "tst")
             ):
-                file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_{which_split}.tsv")
+#                 file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_{which_split}.tsv")
                 if which_split == "test":
-                    which_split = "tst"
-                    entries.extend(self.cls_parse(file_, which_split, lang_abbre))
+                    if self.conf.test_mt and lang_abbre != "en":
+                        file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_en_{which_split}.tsv")
+                        which_split = "tst"
+                        entries.extend(self.mt_parse(file_, which_split, lang_abbre))
+                    elif self.conf.test_bt:
+                        # back_translate
+                        file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_en_{lang_abbre}_{which_split}.tsv")
+                        which_split = "tst"
+                        entries.extend(self.bt_parse(file_, which_split, lang_abbre))
+                    else:
+                        # original
+                        file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_{which_split}.tsv")
+                        which_split = "tst"
+                        entries.extend(self.cls_parse(file_, which_split, lang_abbre))
                 elif which_split == "train":
-                    which_split = "trn"
-                    entries.extend(self.cls_parse(file_, which_split, lang_abbre))
+                    if self.conf.train_mt:
+                        if lang_abbre == 'en':
+                            continue
+                        file_ = os.path.join(cls_, f"{self.domain}_en_{lang_abbre}_{which_split}.tsv")
+                        which_split = "trn"
+                        entries.extend(self.mt_parse(file_, which_split, lang_abbre))
+                    elif self.conf.train_bt:
+                        if lang_abbre == "en":
+                            continue
+                        file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_en_{lang_abbre}_{which_split}.tsv")
+                        which_split = "trn"
+                        entries.extend(self.bt_parse(file_, which_split, lang_abbre))
+                    else:
+                        file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_{which_split}.tsv")
+                        which_split = "trn"
+                        entries.extend(self.cls_parse(file_, which_split, lang_abbre))
                 else:
                     raise ValueError
         
@@ -77,16 +103,11 @@ class CLSDataset(MultilingualRawDataset):
         import pandas as pd
         sentence_pair_egs = []
         language = abbre2language[lang_abbre]
-        # f = pd.read_csv(input_file, sep='\t')
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
-            # for idx in range(len(f)):
-#                 line = f.iloc[idx]
-#                 line = [line[1], line[2]]
                 assert len(line) == 3, f"{len(line)}, {input_file}, {idx}, {line}"
                 text_a, text_b, label = line[0], line[1], line[2]
-#                 label = str(round(float(label), 1))
                 assert label in self.get_labels(), f"{label}, {input_file}, {type(label)}"
                 sentence_pair_egs.append(
                     (
@@ -101,3 +122,72 @@ class CLSDataset(MultilingualRawDataset):
                 )
         print(len(sentence_pair_egs), input_file)
         return sentence_pair_egs
+    
+    def mt_parse(self, input_file, which_split, lang_abbre):
+        import pandas as pd
+        sentence_pair_egs = []
+        language = abbre2language[lang_abbre]
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = line.strip().split("\t")
+                
+                assert len(line) == 5, f"{len(line)}, {input_file}, {idx}, {line}"
+                
+                if which_split == "trn":
+                    text1_a, text1_b = line[0], line[1]
+                    text2_a, text2_b, label = line[3], line[4], line[2]
+                elif which_split == "tst":
+                    text1_a, text1_b = line[3], line[4]
+                    text2_a, text2_b, label = line[0], line[1], line[2]
+                assert label in self.get_labels(), f"{label}, {input_file}, {type(label)}"
+                
+                sentence_pair_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentencePairExample(
+                            uid=f"english-{idx}-{which_split}",
+                            text_a=text1_b,
+                            label=label,
+                        ),
+                    )
+                )
+                
+                sentence_pair_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentencePairExample(
+                            uid=f"{language}-{idx}-{which_split}",
+                            text_a=text2_b,
+                            label=label,
+                        ),
+                    )
+                )
+        print (len(sentence_pair_egs), input_file)
+        return sentence_pair_egs
+    
+    def bt_parse(self, input_file, which_split, lang_abbre):
+        import pandas as pd
+        sentence_pair_egs = []
+        language = abbre2language[lang_abbre]
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = line.strip().split("\t")
+                assert len(line) == 7, f"{len(line)}, {input_file}, {idx}, {line}"
+                text_a, text_b, label = line[5], line[6], line[2]
+                assert label in self.get_labels(), f"{label}, {input_file}, {type(label)}"
+                sentence_pair_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentencePairExample(
+                            uid=f"{language}-{idx}-{which_split}",
+                            text_a=text_b,
+                            label=label,
+                        ),
+                    )
+                )
+        print (len(sentence_pair_egs), input_file)
+        return sentence_pair_egs
+                

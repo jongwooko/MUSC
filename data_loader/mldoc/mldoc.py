@@ -18,7 +18,7 @@ class MLDocDataset(MultilingualRawDataset):
         self.label_list = ["CCAT", "ECAT", "GCAT", "MCAT"]
         self.label2idx = {"CCAT": 0, "ECAT": 1, "GCAT": 2, "MCAT": 3}
         self.num_labels = 4
-        self.num_trn_examples = 1000 # 1000, 2000, 5000, 10000
+        self.num_trn_examples = 10000 # 1000, 2000, 5000, 10000
         self.contents = OrderedDict()
         self.create_contents()
 
@@ -40,13 +40,40 @@ class MLDocDataset(MultilingualRawDataset):
             ):
                 lang = abbre2language[abbr]
                 if which_split == "train":
-                    which_split = f"{lang}.train.{self.num_trn_examples}"
+                    if self.conf.train_mt:
+                        if lang == "english":
+                            continue
+                        which_split = f"english_{lang}.train.{self.num_trn_examples}"
+                        file_ = os.path.join(mldoc_, which_split)
+                        entries.extend(self.mt_parse(lang, file_, wsplit))
+                    elif self.conf.train_bt:
+                        if lang == "english":
+                            continue
+                        which_split = f"{lang}.english_{lang}_train.{self.num_trn_examples}"
+                        file_ = os.path.join(mldoc_, which_split)
+                        entries.extend(self.bt_parse(lang, file_, wsplit))
+                    else:
+                        which_split = f"{lang}.train.{self.num_trn_examples}"
+                        file_ = os.path.join(mldoc_, which_split)
+                        entries.extend(self.mldoc_parse(lang, file_, wsplit))
                 if which_split == "dev":
                     which_split = f"{lang}.dev"
+                    file_ = os.path.join(mldoc_, which_split)
+                    entries.extend(self.mldoc_parse(lang, file_, wsplit))
                 if which_split == "test":
-                    which_split = f"{lang}.test"
-                file_ = os.path.join(mldoc_, which_split)
-                entries.extend(self.mldoc_parse(lang, file_, wsplit))
+                    if self.conf.test_mt and lang != "english":
+                        which_split = f"{lang}_english.test"
+                        file_ = os.path.join(mldoc_, which_split)
+                        entries.extend(self.mt_parse(lang, file_, wsplit))
+                    elif self.conf.test_bt:
+                        which_split = f"{lang}_english_{lang}.test"
+                        file_ = os.path.join(mldoc_, which_split)
+                        entries.extend(self.bt_parse(lang, file_, wsplit))
+                    else:
+                        which_split = f"{lang}.test"
+                        file_ = os.path.join(mldoc_, which_split)
+                        entries.extend(self.mldoc_parse(lang, file_, wsplit))
+                        
         entries = sorted(entries, key=lambda x: x[0])  # groupby requires contiguous
         for language, triplets in itertools.groupby(entries, key=lambda x: x[0]):
             # language, [(lang, split, eg)...]
@@ -86,6 +113,72 @@ class MLDocDataset(MultilingualRawDataset):
                 portion_identifier = -1
                 label = line[0].strip()
                 text_a = line[1].strip()
+                assert label in self.get_labels(), f"{label}, {input_file}"
+                sentence_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentenceExample(
+                            uid=f"{language}-{idx}-{which_split}",
+                            text_a=text_a,
+                            label=label,
+                            portion_identifier=portion_identifier,
+                        ),
+                    )
+                )
+        return sentence_egs
+    
+    def mt_parse(self, lang, input_file, which_split):
+        sentence_egs = []
+        lang = language2abbre[lang]
+        language = abbre2language[lang]
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = line.strip().split("\t")
+                
+                portion_identifier = -1
+                label = line[0].strip()
+                text1_a = line[1].strip()
+                text2_a = line[2].strip()
+                assert label in self.get_labels(), f"{label}, {input_file}"
+                sentence_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentenceExample(
+                            uid=f"english-{idx}-{which_split}",
+                            text_a=text1_a,
+                            label=label,
+                            portion_identifier=portion_identifier,
+                        ),
+                    )
+                )
+                
+                sentence_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentenceExample(
+                            uid=f"{language}-{idx}-{which_split}",
+                            text_a=text2_a,
+                            label=label,
+                            portion_identifier=portion_identifier,
+                        ),
+                    )
+                )
+        return sentence_egs
+    
+    def bt_parse(self, lang, input_file, which_split):
+        sentence_egs = []
+        lang = language2abbre[lang]
+        language = abbre2language[lang]
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = line.strip().split("\t")
+                
+                portion_identifier = -1
+                label = line[0].strip()
+                text_a = line[3].strip()
                 assert label in self.get_labels(), f"{label}, {input_file}"
                 sentence_egs.append(
                     (
