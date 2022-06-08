@@ -11,9 +11,9 @@ from .modeling_xlm_roberta import (
     XLMRobertaForTokenClassification,
 )
     
-from transformers.configuration_roberta import RobertaConfig
-from transformers.tokenization_bert import BertTokenizer
-from transformers.tokenization_xlm_roberta import XLMRobertaTokenizer
+from transformers.models.roberta.configuration_roberta import RobertaConfig
+from transformers.models.bert.tokenization_bert import BertTokenizer
+from transformers.models.xlm_roberta.tokenization_xlm_roberta import XLMRobertaTokenizer
 # from transformers.tokenization_roberta import RobertaTokenizer
 
 import torch
