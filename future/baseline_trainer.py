@@ -191,6 +191,8 @@ class BaselineTuner(BaseTrainer):
                                                 w_mix * self.criterion(logits_m, golds).mean() + \
                                                 (1 - w_mix) * self.criterion(logits_m, golds[rev]).mean()) + \
                                    lam * (w_mix * self.supcon_fct(feats_mn, golds) + (1 - w_mix) * self.supcon_fct(feats_mr, golds[rev]))
+                            loss = loss / len(trn_iters)
+                            trn_loss.append(loss.item())
                             
                         elif self.conf.use_mix:
                             logits, feats, *_ = self._model_forward(self.model, **batched)
@@ -205,6 +207,9 @@ class BaselineTuner(BaseTrainer):
                             loss = self.criterion(logits, golds).mean() + \
                                     w_mix * self.criterion(logits_m, golds).mean() + \
                                     (1 - w_mix) * self.criterion(logits_m, golds[rev]).mean()
+                            loss = loss / len(trn_iters)
+                            trn_loss.append(loss.item())
+                            
                         elif self.conf.use_supcon:
                             lam = self.conf.lam
                             logits, feats, *_ = self._model_forward(self.model, **batched)
@@ -212,6 +217,7 @@ class BaselineTuner(BaseTrainer):
                                    lam * self.supcon_fct(feats.unsqueeze(1), golds)
                             loss = loss / len(trn_iters)
                             trn_loss.append(loss.item())
+                            
                         else:
                             logits, feats, *_ = self._model_forward(self.model, **batched)
                             loss = self.criterion(logits, golds).mean()
