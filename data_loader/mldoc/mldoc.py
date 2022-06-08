@@ -29,8 +29,8 @@ class MLDocDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-#         mldoc_ = "./data/mldoc/"
-        mldoc_ = "/input/jongwooko/xlt/data/download/mldoc/"
+        mldoc_ = "./data/mldoc/"
+#         mldoc_ = "/input/jongwooko/xlt/data/download/mldoc/"
         entries = []
         for abbr in self.lang_abbres:
             for which_split, wsplit in (

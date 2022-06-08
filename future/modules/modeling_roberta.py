@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss, MSELoss
 
-from transformers.configuration_roberta import RobertaConfig
+from transformers.models.roberta.configuration_roberta import RobertaConfig
 from transformers.file_utils import add_start_docstrings
 from .modeling_bert import BertEmbeddings, BertLayerNorm, BertModel, BertPreTrainedModel, gelu
 

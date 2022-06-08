@@ -19,7 +19,7 @@ import logging
 
 import torch
 import torch.nn as nn
-from transformers.configuration_xlm_roberta import XLMRobertaConfig
+from transformers.models.xlm_roberta.configuration_xlm_roberta import XLMRobertaConfig
 from transformers.file_utils import add_start_docstrings
 from .modeling_roberta import (
     RobertaForMaskedLM,

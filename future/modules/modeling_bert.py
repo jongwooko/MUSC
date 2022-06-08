@@ -24,7 +24,7 @@ import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss, MSELoss
 
-from transformers.configuration_bert import BertConfig
+from transformers.models.bert.configuration_bert import BertConfig
 from transformers.file_utils import add_start_docstrings
 from transformers.modeling_utils import PreTrainedModel, prune_linear_layer
 
