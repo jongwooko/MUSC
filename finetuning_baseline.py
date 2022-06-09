@@ -93,7 +93,8 @@ def init_task(conf):
                 tokenizer=tokenizer,
                 max_seq_len=conf.max_seq_len,
                 mislabel_type=conf.mislabel_type,
-                mislabel_ratio=conf.mislabel_ratio
+                mislabel_ratio=conf.mislabel_ratio,
+                do_cache=False
             )
     else:
         data_iter[raw_dataset.language] = data_iter_cls(

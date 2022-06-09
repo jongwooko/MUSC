@@ -114,8 +114,8 @@ class MARCDataset(MultilingualRawDataset):
                 )
         print(input_file, len(sentence_egs))
         return sentence_egs
-        
-    def marc_trans_parse(self, lang, input_file, which_split):
+    
+    def mt_parse(self, lang, input_file, which_split):
         sentence_egs = []
         language = abbre2language[lang]
         with open(input_file, "r") as f:
@@ -175,7 +175,7 @@ class MARCDataset(MultilingualRawDataset):
                             language,
                             which_split,
                             SentencePairExample(
-                                uid=f"english-{idx}-{which_split}",
+                                uid=f"{language}-{idx}-{which_split}",
                                 text_a=text_a,
                                 text_b=text_b,
                                 label=label,
@@ -194,6 +194,39 @@ class MARCDataset(MultilingualRawDataset):
                             language,
                             which_split,
                             SentencePairExample(
+                                uid=f"english-{idx}-{which_split}",
+                                text_a=text_a,
+                                text_b=text_b,
+                                label=label,
+                                portion_identifier=portion_identifier,
+                            ),
+                        )
+                    )
+                else:
+                    raise ValueError
+        print(input_file, len(sentence_egs))
+        return sentence_egs
+    
+    def bt_parse(self, input_file, which_split, lang_abbre):
+        sentence_egs = []
+        language = abbre2language[lang]
+        with open(input_file, "r") as f:
+            for idx, line in enumerate(f):
+                line = json.loads(line.strip())
+                label = int(line["stars"])
+                # assert line["language"] == lang
+                assert label in self.get_labels(), f"{label}, {input_file}"
+                if which_split == "trn":
+                    category = line["product_category"].strip()
+                    title = line["backtrans_review_title"].strip()
+                    text_a = line["backtrans_review_body"].strip()
+                    text_b = f"{title} . {category}"
+
+                    sentence_egs.append(
+                        (
+                            language,
+                            which_split,
+                            SentencePairExample(
                                 uid=f"{language}-{idx}-{which_split}",
                                 text_a=text_a,
                                 text_b=text_b,
@@ -202,6 +235,28 @@ class MARCDataset(MultilingualRawDataset):
                             ),
                         )
                     )
+                    
+                elif which_split == "tst":
+                    category = line["product_category"].strip()
+                    title = line["backtrans_review_title"].strip()
+                    text_a = line["backtrans_review_body"].strip()
+                    text_b = f"{title} . {category}"
+                    
+                    portion_identifier = -1
+                    sentence_egs.append(
+                        (
+                            language,
+                            which_split,
+                            SentencePairExample(
+                                uid=f"{language}-{idx}-{which_split}",
+                                text_a=text_a,
+                                text_b=text_b,
+                                label=label,
+                                portion_identifier=portion_identifier,
+                            ),
+                        )
+                    )
+
                 else:
                     raise ValueError
         print(input_file, len(sentence_egs))

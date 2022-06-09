@@ -18,7 +18,7 @@ class MLDocDataset(MultilingualRawDataset):
         self.label_list = ["CCAT", "ECAT", "GCAT", "MCAT"]
         self.label2idx = {"CCAT": 0, "ECAT": 1, "GCAT": 2, "MCAT": 3}
         self.num_labels = 4
-        self.num_trn_examples = 10000 # 1000, 2000, 5000, 10000
+        self.num_trn_examples = 1000 # 1000, 2000, 5000, 10000
         self.contents = OrderedDict()
         self.create_contents()
 
@@ -29,7 +29,7 @@ class MLDocDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        mldoc_ = "./data/mldoc/"
+        mldoc_ = "./data/download/mldoc/"
 #         mldoc_ = "/input/jongwooko/xlt/data/download/mldoc/"
         entries = []
         for abbr in self.lang_abbres:
@@ -49,7 +49,7 @@ class MLDocDataset(MultilingualRawDataset):
                     elif self.conf.train_bt:
                         if lang == "english":
                             continue
-                        which_split = f"{lang}.english_{lang}_train.{self.num_trn_examples}"
+                        which_split = f"{lang}_english_{lang}.train.{self.num_trn_examples}"
                         file_ = os.path.join(mldoc_, which_split)
                         entries.extend(self.bt_parse(lang, file_, wsplit))
                     else:
@@ -174,11 +174,15 @@ class MLDocDataset(MultilingualRawDataset):
         language = abbre2language[lang]
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
-                line = line.strip().split("\t")
+                line = line.strip().split("\t")               
+#                 assert len(line)==4, f"{len(line)}, {idx}, {input_file}"
                 
                 portion_identifier = -1
                 label = line[0].strip()
-                text_a = line[3].strip()
+                try:
+                    text_a = line[3].strip()
+                except:
+                    text_a = line[0].strip()
                 assert label in self.get_labels(), f"{label}, {input_file}"
                 sentence_egs.append(
                     (

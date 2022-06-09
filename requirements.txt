@@ -1,2 +1,2 @@
 seqeval
-transformers==3.5.1
+transformers==4.9.0

@@ -75,6 +75,9 @@ def get_args():
     parser.add_argument("--train_mt", action="store_true")
     parser.add_argument("--train_bt", action="store_true")
     
+    # cls
+    parser.add_argument("--domain", type=str)
+    
     return parser
 
 

@@ -18,7 +18,7 @@ class CLSDataset(MultilingualRawDataset):
         self.label_list = ["pos", "neg"]
         self.label2idx = {"pos": 0, "neg": 1}
         self.num_labels = 2
-        self.domain = "books" # "dvd" "music"
+        self.domain = self.conf.domain # "books" "dvd" "music"
         self.contents = OrderedDict()
         self.create_contents()
         
@@ -107,8 +107,12 @@ class CLSDataset(MultilingualRawDataset):
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
-                assert len(line) == 3, f"{len(line)}, {input_file}, {idx}, {line}"
-                text_a, text_b, label = line[0], line[1], line[2]
+                try:
+                    assert len(line) == 3, f"{len(line)}, {input_file}, {idx}, {line}"
+                    text_a, text_b, label = line[0], line[1], line[2]
+                except:
+                    assert len(line) == 2, f"{len(line)}, {input_file}, {idx}, {line}"
+                    text_b, label = line[0], line[1]
                 assert label in self.get_labels(), f"{label}, {input_file}, {type(label)}"
                 sentence_pair_egs.append(
                     (
@@ -175,8 +179,11 @@ class CLSDataset(MultilingualRawDataset):
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
-                assert len(line) == 7, f"{len(line)}, {input_file}, {idx}, {line}"
-                text_a, text_b, label = line[5], line[6], line[2]
+                try:
+                    assert len(line) == 7, f"{len(line)}, {input_file}, {idx}, {line}"
+                    text_a, text_b, label = line[5], line[6], line[2]
+                except:
+                    text_a, text_b, label = line[0], line[1], line[2]
                 assert label in self.get_labels(), f"{label}, {input_file}, {type(label)}"
                 sentence_pair_egs.append(
                     (

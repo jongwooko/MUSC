@@ -107,22 +107,41 @@ class BaselineTuner(BaseTrainer):
                         golds = golds[:, 0]
                         
                         if not self.conf.use_supcon:
-                            logits_src, feats_src, hidden_src, *_ = self._model_forward(self.model, **batched_src)
-                            logits_tgt, feats_tgt, hidden_tgt, *_ = self._model_forward(self.model, **batched_tgt)
+                            if not self.conf.use_mix:
+                                logits_src, feats_src, *_ = self._model_forward(self.model, **batched_src)
+                                logits_tgt, feats_tgt, *_ = self._model_forward(self.model, **batched_tgt)
 
-                            if self.conf.use_proj and self.conf.use_multi_projs:
-                                feats_tgt = self.model.projs[ti_idx](feats_tgt)
-                                logits_tgt = self.model.get_logits_from_last_hidden(feats_tgt)
-                            elif self.conf.use_proj:
-                                feats_tgt = self.model.projs(feats_tgt)
-                                logits_tgt = self.model.get_logits_from_last_hidden(feats_tgt)
-
-                            alpha = self.conf.alpha
-                            loss = alpha * self.criterion(logits_src, golds).mean() + \
-                                   (1-alpha) * self.criterion(logits_tgt, golds).mean() + \
-                                   0.1 * vectorwise_mse_loss(feats_src.detach(), feats_tgt)
-                            loss = loss / len(trn_iters)
-                            trn_loss.append(loss.item())
+                                alpha = self.conf.alpha
+                                loss = alpha * self.criterion(logits_src, golds).mean() + \
+                                       (1-alpha) * self.criterion(logits_tgt, golds).mean()
+                                loss = loss / len(trn_iters)
+                                trn_loss.append(loss.item())
+                                
+                            else:
+                                alpha = self.conf.alpha
+                                
+                                logits_src, feats_src, *_ = self._model_forward(self.model, **batched_src)
+                                logits_tgt, feats_tgt, *_ = self._model_forward(self.model, **batched_tgt)
+                                
+                                bsz = len(golds)
+                                rev = bsz - torch.arange(bsz) - 1
+                                
+                                w_src_mix = np.random.random() # beta distribution with parameter 1
+                                batched_src["mix_ratio"] = w_src_mix
+                                logits_src_m, feats_src_m, *_ = self._model_forward(self.model, **batched_src)
+                                
+                                w_tgt_mix = np.random.random()
+                                batched_tgt["mix_ratio"] = w_tgt_mix
+                                logits_tgt_m, feats_tgt_m, *_ = self._model_forward(self.model, **batched_tgt)
+                                
+                                loss = alpha * (self.criterion(logits_src, golds).mean() + \
+                                                w_src_mix * self.criterion(logits_src_m, golds).mean() + \
+                                                (1 - w_src_mix) * self.criterion(logits_src_m, golds[rev]).mean()) + \
+                                       (1 - alpha) * (self.criterion(logits_tgt, golds).mean() + \
+                                               w_tgt_mix * self.criterion(logits_tgt_m, golds).mean() + \
+                                               (1 - w_tgt_mix) * self.criterion(logits_tgt_m, golds[rev]).mean())
+                                loss = loss / len(trn_iters)
+                                trn_loss.append(loss.item())
                             
                         else:
                             if not self.conf.use_mix:
