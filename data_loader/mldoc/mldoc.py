@@ -18,7 +18,7 @@ class MLDocDataset(MultilingualRawDataset):
         self.label_list = ["CCAT", "ECAT", "GCAT", "MCAT"]
         self.label2idx = {"CCAT": 0, "ECAT": 1, "GCAT": 2, "MCAT": 3}
         self.num_labels = 4
-        self.num_trn_examples = 1000 # 1000, 2000, 5000, 10000
+        self.num_trn_examples = 10000 # 1000, 2000, 5000, 10000
         self.contents = OrderedDict()
         self.create_contents()
 
@@ -29,8 +29,9 @@ class MLDocDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        mldoc_ = "./data/download/mldoc/"
-#         mldoc_ = "/input/jongwooko/xlt/data/download/mldoc/"
+        # mldoc_ = "./data/download/mldoc/"
+        # mldoc_ = "/input/jongwooko/xlt/data/download/mldoc/"
+        mldoc_ = "/data/FSXLT_dataset/data/download/mldoc/"
         entries = []
         for abbr in self.lang_abbres:
             for which_split, wsplit in (
@@ -40,7 +41,9 @@ class MLDocDataset(MultilingualRawDataset):
             ):
                 lang = abbre2language[abbr]
                 if which_split == "train":
-                    if self.conf.train_mt and lang != "english":
+                    if self.conf.train_mt and lang == "english":
+                        continue
+                    elif self.conf.train_mt and lang != "english":
                         which_split = f"english_{lang}.train.{self.num_trn_examples}"
                         file_ = os.path.join(mldoc_, which_split)
                         entries.extend(self.mt_parse(lang, file_, wsplit))
@@ -61,10 +64,10 @@ class MLDocDataset(MultilingualRawDataset):
                         which_split = f"{lang}_english.test"
                         file_ = os.path.join(mldoc_, which_split)
                         entries.extend(self.mt_parse(lang, file_, wsplit))
-                    elif self.conf.test_bt and lang != "english":
-                        which_split = f"{lang}_english_{lang}.test"
-                        file_ = os.path.join(mldoc_, which_split)
-                        entries.extend(self.bt_parse(lang, file_, wsplit))
+                    # elif self.conf.test_bt and lang != "english":
+                    #     which_split = f"{lang}_english_{lang}.test"
+                    #     file_ = os.path.join(mldoc_, which_split)
+                    #     entries.extend(self.bt_parse(lang, file_, wsplit))
                     else:
                         which_split = f"{lang}.test"
                         file_ = os.path.join(mldoc_, which_split)
@@ -198,23 +201,23 @@ class MLDocDataset(MultilingualRawDataset):
                     )
                 )
                 
-                try:
-                    portion_identifier = -1
-                    label = line[0].strip()
-                    text_a = line[1].strip()
-                except:
-                    continue
-                assert label in self.get_labels(), f"{label}, {input_file}"
-                sentence_egs.append(
-                    (
-                        language,
-                        which_split,
-                        SentenceExample(
-                            uid=f"english-{idx}-{which_split}",
-                            text_a=text_a,
-                            label=label,
-                            portion_identifier=portion_identifier,
-                        ),
-                    )
-                )
+                # try:
+                #     portion_identifier = -1
+                #     label = line[0].strip()
+                #     text_a = line[1].strip()
+                # except:
+                #     continue
+                # assert label in self.get_labels(), f"{label}, {input_file}"
+                # sentence_egs.append(
+                #     (
+                #         language,
+                #         which_split,
+                #         SentenceExample(
+                #             uid=f"english-{idx}-{which_split}",
+                #             text_a=text_a,
+                #             label=label,
+                #             portion_identifier=portion_identifier,
+                #         ),
+                #     )
+                # )
         return sentence_egs

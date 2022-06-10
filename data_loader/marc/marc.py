@@ -31,8 +31,8 @@ class MARCDataset(MultilingualRawDataset):
 
     def create_contents(self):
         # marc_ = "/input/jongwooko/xlt/data/download/marc/"
-        # marc_ = "/data/FSXLT_dataset/data/download/marc/"
-        marc_ = "./data/download/marc/"
+        marc_ = "/data/FSXLT_dataset/data/download/marc/"
+        # marc_ = "./data/download/marc/"
         
         entries = []
         for lang in self.lang_abbres:
@@ -42,7 +42,9 @@ class MARCDataset(MultilingualRawDataset):
                 ("test", "tst"),
             ):
                 if which_split == "train":
-                    if self.conf.train_mt and lang != "en":
+                    if self.conf.train_mt and lang == "en":
+                        continue
+                    elif self.conf.train_mt and lang != "en":
                         which_split = os.path.join("train", f"dataset_en_{lang}_train.json")
                         file_ = os.path.join(marc_, which_split)
                         entries.extend(self.mt_parse(lang, file_, wsplit))
@@ -56,17 +58,17 @@ class MARCDataset(MultilingualRawDataset):
                         entries.extend(self.marc_parse(lang, file_, wsplit))
                 elif which_split == "dev":
                     which_split = os.path.join("dev", f"dataset_{lang}_dev.json")
-                        file_ = os.path.join(marc_, which_split)
-                        entries.extend(self.marc_parse(lang, file_, wsplit))
+                    file_ = os.path.join(marc_, which_split)
+                    entries.extend(self.marc_parse(lang, file_, wsplit))
                 elif which_split == "test":
                     if self.conf.test_mt and lang != "en":
                         which_split = os.path.join("test", f"dataset_{lang}_en_test.json")
                         file_ = os.path.join(marc_, which_split)
                         entries.extend(self.mt_parse(lang, file_, wsplit))
-                    elif self.conf.test_bt and lang != "en":
-                        which_split = os.path.join("test", f"dataset_{lang}_en_{lang}_test.json")
-                        file_ = os.path.join(marc_, which_split)
-                        entries.extend(self.bt_parse(lang, file_, wsplit))
+                    # elif self.conf.test_bt and lang != "en":
+                    #     which_split = os.path.join("test", f"dataset_{lang}_en_{lang}_test.json")
+                    #     file_ = os.path.join(marc_, which_split)
+                    #     entries.extend(self.bt_parse(lang, file_, wsplit))
                     else:
                         which_split = os.path.join("test", f"dataset_{lang}_test.json")
                         file_ = os.path.join(marc_, which_split)
