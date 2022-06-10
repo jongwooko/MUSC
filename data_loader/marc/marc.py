@@ -182,6 +182,25 @@ class MARCDataset(MultilingualRawDataset):
                     )
                 elif which_split == "tst":
                     category = line["product_category"].strip()
+                    title = line["trans_review_title"].strip()
+                    text_a = line["trans_review_body"].strip()
+                    text_b = f"{title} . {category}"
+
+                    sentence_egs.append(
+                        (
+                            language,
+                            which_split,
+                            SentencePairExample(
+                                uid=f"english-{idx}-{which_split}",
+                                text_a=text_a,
+                                text_b=text_b,
+                                label=label,
+                                portion_identifier=portion_identifier,
+                            ),
+                        )
+                    )
+                    
+                    category = line["product_category"].strip()
                     title = line["review_title"].strip()
                     text_a = line["review_body"].strip()
                     text_b = f"{title} . {category}"
@@ -193,25 +212,6 @@ class MARCDataset(MultilingualRawDataset):
                             which_split,
                             SentencePairExample(
                                 uid=f"{language}-{idx}-{which_split}",
-                                text_a=text_a,
-                                text_b=text_b,
-                                label=label,
-                                portion_identifier=portion_identifier,
-                            ),
-                        )
-                    )
-
-                    category = line["product_category"].strip()
-                    title = line["trans_review_title"].strip()
-                    text_a = line["trans_review_body"].strip()
-                    text_b = f"{title} . {category}"
-
-                    sentence_egs.append(
-                        (
-                            language,
-                            which_split,
-                            SentencePairExample(
-                                uid=f"english-{idx}-{which_split}",
                                 text_a=text_a,
                                 text_b=text_b,
                                 label=label,

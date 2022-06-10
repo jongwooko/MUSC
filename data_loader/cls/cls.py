@@ -135,6 +135,8 @@ class CLSDataset(MultilingualRawDataset):
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
                 
+                if len(line) != 5:
+                    continue
                 assert len(line) == 5, f"{len(line)}, {input_file}, {idx}, {line}"
                 
                 if which_split == "trn":
