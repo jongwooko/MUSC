@@ -131,11 +131,16 @@ class MLDocDataset(MultilingualRawDataset):
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
-                
-                portion_identifier = -1
-                label = line[0].strip()
-                text1_a = line[1].strip()
-                text2_a = line[2].strip()
+                if which_split == "trn":
+                    portion_identifier = -1
+                    label = line[0].strip()
+                    text1_a = line[1].strip()
+                    text2_a = line[2].strip()
+                elif which_split == "tst":
+                    portion_identifier = -1
+                    label = line[0].strip()
+                    text1_a = line[2].strip()
+                    text2_a = line[1].strip()
                 assert label in self.get_labels(), f"{label}, {input_file}"
                 sentence_egs.append(
                     (

@@ -180,8 +180,8 @@ class MARCDataset(MultilingualRawDataset):
                     )
                 elif which_split == "tst":
                     category = line["product_category"].strip()
-                    title = line["trans_review_title"].strip()
-                    text_a = line["trans_review_body"].strip()
+                    title = line["review_title"].strip()
+                    text_a = line["review_body"].strip()
                     text_b = f"{title} . {category}"
                     
                     portion_identifier = -1
@@ -200,8 +200,8 @@ class MARCDataset(MultilingualRawDataset):
                     )
 
                     category = line["product_category"].strip()
-                    title = line["review_title"].strip()
-                    text_a = line["review_body"].strip()
+                    title = line["trans_review_title"].strip()
+                    text_a = line["trans_review_body"].strip()
                     text_b = f"{title} . {category}"
 
                     sentence_egs.append(

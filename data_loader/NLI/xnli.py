@@ -52,8 +52,8 @@ class XNLIDataset(MultilingualRawDataset):
         # mnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         entries = []
         
-        xnli_ = "./data/download/xnli/"
-        # xnli_ = "/data/FSXLT_dataset/data/download/xnli/"
+        # xnli_ = "./data/download/xnli/"
+        xnli_ = "/data/FSXLT_dataset/data/download/xnli/"
         # xnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         for lang_abbre in self.lang_abbres:
             for which_split in ("train", "dev", "test"):
@@ -165,8 +165,12 @@ class XNLIDataset(MultilingualRawDataset):
             for idx, line in enumerate(f):
                 line = line.strip().split("\t")
                 if len(line) == 5:
-                    text1_a, text1_b = line[0], line[1]
-                    text2_a, text2_b, label = line[2], line[3], line[4]
+                    if which_split == "trn":
+                        text1_a, text1_b = line[0], line[1]
+                        text2_a, text2_b, label = line[2], line[3], line[4]
+                    elif which_split == "tst":
+                        text1_a, text1_b = line[2], line[3]
+                        text2_a, text2_b, label = line[0], line[1], line[4]
                     if label == "contradictory":
                         label = "contradiction"                
                     assert label in self.get_labels(), f"{label}, {input_file}"
