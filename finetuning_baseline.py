@@ -94,7 +94,7 @@ def init_task(conf):
                 max_seq_len=conf.max_seq_len,
                 mislabel_type=conf.mislabel_type,
                 mislabel_ratio=conf.mislabel_ratio,
-                do_cache=False
+                do_cache=conf.use_cache,
             )
     else:
         data_iter[raw_dataset.language] = data_iter_cls(
@@ -102,6 +102,7 @@ def init_task(conf):
             model=conf.model,
             tokenizer=tokenizer,
             max_seq_len=conf.max_seq_len,
+            do_cache=conf.use_cache,
         )
     
     collocate_batch_fn = task2collocate_fn[conf.dataset_name]

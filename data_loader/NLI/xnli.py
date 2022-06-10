@@ -68,7 +68,7 @@ class XNLIDataset(MultilingualRawDataset):
                     elif self.conf.trans_test:
                         which_split = "tst"
                         entries.extend(self.trans_parse(file_, which_split, lang_abbre))
-                    else
+                    else:
                         which_split = "tst"
                         entries.extend(self.xnli_parse(file_, which_split, lang_abbre))
                 elif which_split == "train":
