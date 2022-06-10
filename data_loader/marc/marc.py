@@ -224,7 +224,7 @@ class MARCDataset(MultilingualRawDataset):
         print(input_file, len(sentence_egs))
         return sentence_egs
     
-    def bt_parse(self, input_file, which_split, lang_abbre):
+    def bt_parse(self, lang, input_file, which_split):
         sentence_egs = []
         language = abbre2language[lang]
         with open(input_file, "r") as f:
@@ -239,6 +239,7 @@ class MARCDataset(MultilingualRawDataset):
                     text_a = line["backtrans_review_body"].strip()
                     text_b = f"{title} . {category}"
 
+                    portion_identifier = -1
                     sentence_egs.append(
                         (
                             language,
