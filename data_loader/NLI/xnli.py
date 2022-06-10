@@ -113,7 +113,7 @@ class XNLIDataset(MultilingualRawDataset):
 
             self.contents[language] = _dataset
 
-    def mnli_parse(self, input_file, which_split):
+    def mnli_parse(self, input_file, which_split, lang_abbre):
         sentence_pair_egs = []
         with open(input_file, "r") as f:
             for idx, line in enumerate(f):

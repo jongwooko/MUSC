@@ -1,5 +1,5 @@
 #!/bin/bash
-CUDA_VISIBLE_DEVICES=5 python finetuning_baseline.py --dataset_name marc \
+CUDA_VISIBLE_DEVICES=4 python finetuning_baseline.py --dataset_name marc \
                               --experiment mt_baseline \
                               --train_mt \
                               --trn_languages german,chinese,french,japanese,spanish \
@@ -13,7 +13,7 @@ CUDA_VISIBLE_DEVICES=5 python finetuning_baseline.py --dataset_name marc \
                               --finetune_lr 1e-5 \
                               --model bert-base-multilingual-cased
 
-CUDA_VISIBLE_DEVICES=5 python finetuning_baseline.py --dataset_name mldoc \
+CUDA_VISIBLE_DEVICES=6 python finetuning_baseline.py --dataset_name mldoc \
                               --experiment mt_baseline_1000 \
                               --train_mt \
                               --trn_languages japanese,chinese,french,german,spanish,russian,italian \
@@ -42,10 +42,10 @@ CUDA_VISIBLE_DEVICES=5 python finetuning_baseline.py --dataset_name mldoc \
                               --model bert-base-multilingual-cased
                               
                               
-CUDA_VISIBLE_DEVICES=5 python finetuning_baseline.py --dataset_name cls \
+CUDA_VISIBLE_DEVICES=1 python finetuning_baseline.py --dataset_name cls \
                               --domain books \
                               --experiment books_mt_baseline \
-                              --train_bt \
+                              --train_mt \
                               --trn_languages german,french,japanese \
                               --eval_languages english,german,french,japanese \
                               --finetune_epochs 10 \
@@ -58,7 +58,7 @@ CUDA_VISIBLE_DEVICES=5 python finetuning_baseline.py --dataset_name cls \
                               --finetune_lr 1e-5 \
                               --model bert-base-multilingual-cased
                               
-CUDA_VISIBLE_DEVICES=5 python finetuning_baseline.py --dataset_name cls \
+CUDA_VISIBLE_DEVICES=2 python finetuning_baseline.py --dataset_name cls \
                               --domain dvd \
                               --experiment dvd_mt_baseline \
                               --train_mt \
@@ -74,7 +74,7 @@ CUDA_VISIBLE_DEVICES=5 python finetuning_baseline.py --dataset_name cls \
                               --finetune_lr 1e-5 \
                               --model bert-base-multilingual-cased
                               
-CUDA_VISIBLE_DEVICES=5 python finetuning_baseline.py --dataset_name cls \
+CUDA_VISIBLE_DEVICES=3 python finetuning_baseline.py --dataset_name cls \
                               --domain music \
                               --experiment music_mt_baseline \
                               --train_mt \
