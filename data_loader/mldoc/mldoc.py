@@ -40,15 +40,11 @@ class MLDocDataset(MultilingualRawDataset):
             ):
                 lang = abbre2language[abbr]
                 if which_split == "train":
-                    if self.conf.train_mt:
-                        if lang == "english":
-                            continue
+                    if self.conf.train_mt and lang != "english":
                         which_split = f"english_{lang}.train.{self.num_trn_examples}"
                         file_ = os.path.join(mldoc_, which_split)
                         entries.extend(self.mt_parse(lang, file_, wsplit))
-                    elif self.conf.train_bt:
-                        if lang == "english":
-                            continue
+                    elif self.conf.train_bt and lang != "english":
                         which_split = f"{lang}_english_{lang}.train.{self.num_trn_examples}"
                         file_ = os.path.join(mldoc_, which_split)
                         entries.extend(self.bt_parse(lang, file_, wsplit))
@@ -56,16 +52,16 @@ class MLDocDataset(MultilingualRawDataset):
                         which_split = f"{lang}.train.{self.num_trn_examples}"
                         file_ = os.path.join(mldoc_, which_split)
                         entries.extend(self.mldoc_parse(lang, file_, wsplit))
-                if which_split == "dev":
+                elif which_split == "dev":
                     which_split = f"{lang}.dev"
                     file_ = os.path.join(mldoc_, which_split)
                     entries.extend(self.mldoc_parse(lang, file_, wsplit))
-                if which_split == "test":
+                elif which_split == "test":
                     if self.conf.test_mt and lang != "english":
                         which_split = f"{lang}_english.test"
                         file_ = os.path.join(mldoc_, which_split)
                         entries.extend(self.mt_parse(lang, file_, wsplit))
-                    elif self.conf.test_bt:
+                    elif self.conf.test_bt and lang != "english":
                         which_split = f"{lang}_english_{lang}.test"
                         file_ = os.path.join(mldoc_, which_split)
                         entries.extend(self.bt_parse(lang, file_, wsplit))

@@ -43,7 +43,7 @@ class CLSDataset(MultilingualRawDataset):
                         file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_en_{which_split}.tsv")
                         which_split = "tst"
                         entries.extend(self.mt_parse(file_, which_split, lang_abbre))
-                    elif self.conf.test_bt:
+                    elif self.conf.test_bt and lang_abbre != "en":
                         # back_translate
                         file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_en_{lang_abbre}_{which_split}.tsv")
                         which_split = "tst"
@@ -54,15 +54,11 @@ class CLSDataset(MultilingualRawDataset):
                         which_split = "tst"
                         entries.extend(self.cls_parse(file_, which_split, lang_abbre))
                 elif which_split == "train":
-                    if self.conf.train_mt:
-                        if lang_abbre == 'en':
-                            continue
+                    if self.conf.train_mt and lang_abbre != "en":
                         file_ = os.path.join(cls_, f"{self.domain}_en_{lang_abbre}_{which_split}.tsv")
                         which_split = "trn"
                         entries.extend(self.mt_parse(file_, which_split, lang_abbre))
-                    elif self.conf.train_bt:
-                        if lang_abbre == "en":
-                            continue
+                    elif self.conf.train_bt and lang_abbre != "en":
                         file_ = os.path.join(cls_, f"{self.domain}_{lang_abbre}_en_{lang_abbre}_{which_split}.tsv")
                         which_split = "trn"
                         entries.extend(self.bt_parse(file_, which_split, lang_abbre))

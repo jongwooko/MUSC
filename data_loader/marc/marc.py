@@ -42,23 +42,36 @@ class MARCDataset(MultilingualRawDataset):
                 ("test", "tst"),
             ):
                 if which_split == "train":
-                    if lang != "en" and self.conf.trans_train:
+                    if self.conf.train_mt and lang != "en":
                         which_split = os.path.join("train", f"dataset_en_{lang}_train.json")
+                        file_ = os.path.join(marc_, which_split)
+                        entries.extend(self.mt_parse(lang, file_, wsplit))
+                    elif self.conf.train_bt and lang != "en":
+                        which_split = os.path.join("train", f"dataset_{lang}_en_{lang}_train.json")
+                        file_ = os.path.join(marc_, which_split)
+                        entries.extend(self.bt_parse(lang, file_, wsplit))
                     else:
                         which_split = os.path.join("train", f"dataset_{lang}_train.json")
+                        file_ = os.path.join(marc_, which_split)
+                        entries.extend(self.marc_parse(lang, file_, wsplit))
                 elif which_split == "dev":
                     which_split = os.path.join("dev", f"dataset_{lang}_dev.json")
+                        file_ = os.path.join(marc_, which_split)
+                        entries.extend(self.marc_parse(lang, file_, wsplit))
                 elif which_split == "test":
-                    if lang != "en" and self.conf.trans_test:
+                    if self.conf.test_mt and lang != "en":
                         which_split = os.path.join("test", f"dataset_{lang}_en_test.json")
+                        file_ = os.path.join(marc_, which_split)
+                        entries.extend(self.mt_parse(lang, file_, wsplit))
+                    elif self.conf.test_bt and lang != "en":
+                        which_split = os.path.join("test", f"dataset_{lang}_en_{lang}_test.json")
+                        file_ = os.path.join(marc_, which_split)
+                        entries.extend(self.bt_parse(lang, file_, wsplit))
                     else:
-                        which_split = os.path.join("test", f"dataset_{lang}_test.json")                   
-                file_ = os.path.join(marc_, which_split)
-                
-                if f"en_{lang}" in which_split or f"{lang}_en" in which_split:
-                    entries.extend(self.marc_trans_parse(lang, file_, wsplit))
-                else:
-                    entries.extend(self.marc_parse(lang, file_, wsplit))
+                        which_split = os.path.join("test", f"dataset_{lang}_test.json")
+                        file_ = os.path.join(marc_, which_split)
+                        entries.extend(self.marc_parse(lang, file_, wsplit))
+                        
         entries = sorted(entries, key=lambda x: x[0])  # groupby requires contiguous
         for language, triplets in itertools.groupby(entries, key=lambda x: x[0]):
             # get examples in this language
