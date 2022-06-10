@@ -14,7 +14,7 @@ class PAWSXDataset(MultilingualRawDataset):
     def __init__(self, conf):
         self.name = "pawsx"
         self.conf = conf
-        self.lang_abbres = ["de", "en", "es", "fr", "ja", "ko", "zh"]
+        self.lang_abbres = ["en", "de", "fr", "es", "ko", "zh", "ja"]
         self.metrics = ["accuracy"]
         self.label_list = ["0", "1"]
         self.label2idx = {"0": 0, "1": 1}
@@ -29,7 +29,8 @@ class PAWSXDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        pawsx_ = "/input/jongwooko/xlt/data/download/pawsx/"
+        # pawsx_ = "/input/jongwooko/xlt/data/download/pawsx/"
+        pawsx_ = "/data/FSXLT_dataset/data/download/pawsx/"
 #         pawsx_ = "./data/download/pawsx/"
         entries = []
         for lang in self.lang_abbres:

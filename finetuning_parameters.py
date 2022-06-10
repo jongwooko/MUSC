@@ -4,7 +4,8 @@ import argparse
 
 
 def get_args():
-#     ROOT_DIRECTORY = "/input/jongwooko/xlt"
+    # ROOT_DIRECTORY = "/input/jongwooko/xlt"
+    # ROOT_DIRECTORY = "/data/FSXLT_dataset"
     ROOT_DIRECTORY = "./"
     RAW_DATA_DIRECTORY = join(ROOT_DIRECTORY, "data", "download")
     TRAINING_DIRECTORY = join(ROOT_DIRECTORY, "checkpoint_baseline")

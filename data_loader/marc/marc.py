@@ -30,8 +30,10 @@ class MARCDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-#         marc_ = "/input/jongwooko/xlt/data/download/marc/"
+        # marc_ = "/input/jongwooko/xlt/data/download/marc/"
+        # marc_ = "/data/FSXLT_dataset/data/download/marc/"
         marc_ = "./data/download/marc/"
+        
         entries = []
         for lang in self.lang_abbres:
             for which_split, wsplit in (

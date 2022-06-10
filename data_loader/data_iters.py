@@ -41,7 +41,8 @@ class TaggingDataIter(object):
     def wrap_iter(self, task, model, which_split, tagged_sents, tokenizer, max_seq_len, do_cache):
         cached_ = os.path.join(
             "./data",
-#             "/input/jongwooko/xlt/data", # change this part
+            # "/input/jongwooko/xlt/data", # change this part
+            # "/data/FSXLT_dataset/data", # change this part
             "cached",
             f"{task},{max_seq_len},{model},{which_split},{len(tagged_sents)},cached.pkl",
         )
@@ -158,7 +159,8 @@ class SeqClsDataIter(object):
         len_egs = 0 if egs is None else len(egs)
         cached_ = os.path.join(
             "./data",
-#             "/input/jongwooko/xlt/data", # change this part
+            # "/input/jongwooko/xlt/data", # change this part
+            # "/data/FSXLT_dataset/data", # change this part
             "cached",
             f"{task},{max_seq_len},{model},{which_split},{len_egs},cached.pkl",
         )

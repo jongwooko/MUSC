@@ -177,12 +177,12 @@ class MLDocDataset(MultilingualRawDataset):
                 line = line.strip().split("\t")               
 #                 assert len(line)==4, f"{len(line)}, {idx}, {input_file}"
                 
-                portion_identifier = -1
-                label = line[0].strip()
                 try:
+                    portion_identifier = -1
+                    label = line[0].strip()
                     text_a = line[3].strip()
                 except:
-                    text_a = line[0].strip()
+                    continue
                 assert label in self.get_labels(), f"{label}, {input_file}"
                 sentence_egs.append(
                     (
@@ -190,6 +190,26 @@ class MLDocDataset(MultilingualRawDataset):
                         which_split,
                         SentenceExample(
                             uid=f"{language}-{idx}-{which_split}",
+                            text_a=text_a,
+                            label=label,
+                            portion_identifier=portion_identifier,
+                        ),
+                    )
+                )
+                
+                try:
+                    portion_identifier = -1
+                    label = line[0].strip()
+                    text_a = line[1].strip()
+                except:
+                    continue
+                assert label in self.get_labels(), f"{label}, {input_file}"
+                sentence_egs.append(
+                    (
+                        language,
+                        which_split,
+                        SentenceExample(
+                            uid=f"english-{idx}-{which_split}",
                             text_a=text_a,
                             label=label,
                             portion_identifier=portion_identifier,

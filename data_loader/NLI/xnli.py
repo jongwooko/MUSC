@@ -53,6 +53,7 @@ class XNLIDataset(MultilingualRawDataset):
         entries = []
         
         xnli_ = "./data/download/xnli/"
+        # xnli_ = "/data/FSXLT_dataset/data/download/xnli/"
         # xnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         for lang_abbre in self.lang_abbres:
             for which_split in ("train", "dev", "test"):
