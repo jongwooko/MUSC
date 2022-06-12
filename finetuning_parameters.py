@@ -57,6 +57,8 @@ def get_args():
     # methods
     parser.add_argument("--alpha", type=float, default=0.5,
                         help="Weights for source and target languages")
+    parser.add_argument("--beta", type=float, default=0.5,
+                        help="Weights for original and mixed losses")
     parser.add_argument("--use_proj", action="store_true",
                         help="Whether to use projector in target languages")
     parser.add_argument("--use_multi_projs", action="store_true",

@@ -186,6 +186,7 @@ class MARCDataset(MultilingualRawDataset):
                     text_a = line["trans_review_body"].strip()
                     text_b = f"{title} . {category}"
 
+                    portion_identifier = -1
                     sentence_egs.append(
                         (
                             language,
@@ -205,7 +206,6 @@ class MARCDataset(MultilingualRawDataset):
                     text_a = line["review_body"].strip()
                     text_b = f"{title} . {category}"
                     
-                    portion_identifier = -1
                     sentence_egs.append(
                         (
                             language,
