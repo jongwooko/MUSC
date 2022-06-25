@@ -21,7 +21,6 @@ if __name__ == "__main__":
     save_iter = 5000
     translator = EasyNMT('m2m_100_418M', device=conf.device)
 
-#     root_dir = '/input/jongwooko/xlt/data/download/marc/'
     root_dir = './marc/'
     train_en_json_dir = os.path.join(root_dir, 'test', 'dataset_{}_test.json'.format(tgt_lang))
     tgt_dir = train_en_json_dir.replace('{}'.format(tgt_lang), '{}_en'.format(tgt_lang))
