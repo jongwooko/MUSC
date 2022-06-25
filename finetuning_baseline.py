@@ -148,16 +148,6 @@ def main(conf):
     # init model
     model, tokenizer, data_iter, metric_name, collocate_batch_fn = init_task(conf)
 
-    # # load model
-    # if conf.dataset_name == 'pawsx':
-    #     PATH = "./checkpoint_baseline/pawsx/eng_1st/1651189733_model_task-pawsx_flr-1.0E-05_ftbs-32_ftepcs-5_sd-3_trnfast-False_evalevery-1544_tlang-en_vlang-en-zh-fr-de-ja-ko-es/state_dicts/best_state.pt"
-    # try:
-    #     model.load_state_dict(torch.load(PATH)['best_state_dict'], strict=True)
-    #     print ("best")
-    # except:
-    #     model.load_state_dict(torch.load(PATH), strict=True)
-    #     print ("last")
-
     adapt_loaders = {}
     for language, language_dataset in data_iter.items():
         # NOTE: the sample dataset are refered
@@ -175,9 +165,6 @@ def main(conf):
     trainer = BaselineTuner(
         conf, collocate_batch_fn=collocate_batch_fn, logger=conf.logger, criterion=torch.nn.CrossEntropyLoss()
     )
-#     trainer = BaselineTuner(
-#         conf, collocate_batch_fn=collocate_batch_fn, logger=conf.logger, criterion=LabelSmoothingLoss(classes=2, smoothing=0.1)
-#     )
     
     if conf.use_supcon:
         trainer.supcon_fct = SupConLoss()

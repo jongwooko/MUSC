@@ -29,9 +29,7 @@ class CLSDataset(MultilingualRawDataset):
         return self.contents[language]
     
     def create_contents(self):
-        # cls_ = "./data/download/cls/"
         cls_ = "/data/FSXLT_dataset/data/download/cls/"
-        # cls_ = "/input/jongwooko/xlt/data/download/cls"
         entries = []
         for lang_abbre in self.lang_abbres:
             for which_split, wsplit in (

@@ -119,7 +119,8 @@ class BaselineTuner(BaseTrainer):
                                 
                             else:
                                 alpha = self.conf.alpha
-                                beta = self.conf.beta
+                                beta1 = self.conf.beta1
+                                beta2 = self.conf.beta2
                                 
                                 logits_src, feats_src, *_ = self._model_forward(self.model, **batched_src)
                                 logits_tgt, feats_tgt, *_ = self._model_forward(self.model, **batched_tgt)
@@ -136,10 +137,10 @@ class BaselineTuner(BaseTrainer):
                                 logits_tgt_m, feats_tgt_m, *_ = self._model_forward(self.model, **batched_tgt)
                                 
                                 loss = alpha * (self.criterion(logits_src, golds).mean() + \
-                                                beta * (w_src_mix * self.criterion(logits_src_m, golds).mean() + \
+                                                beta1 * (w_src_mix * self.criterion(logits_src_m, golds).mean() + \
                                                 (1 - w_src_mix) * self.criterion(logits_src_m, golds[rev]).mean())) + \
                                        (1 - alpha) * (self.criterion(logits_tgt, golds).mean() + \
-                                               beta * (w_tgt_mix * self.criterion(logits_tgt_m, golds).mean() + \
+                                               beta2 * (w_tgt_mix * self.criterion(logits_tgt_m, golds).mean() + \
                                                (1 - w_tgt_mix) * self.criterion(logits_tgt_m, golds[rev]).mean()))
                                 loss = loss / len(trn_iters)
                                 trn_loss.append(loss.item())

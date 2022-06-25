@@ -18,7 +18,7 @@ class MLDocDataset(MultilingualRawDataset):
         self.label_list = ["CCAT", "ECAT", "GCAT", "MCAT"]
         self.label2idx = {"CCAT": 0, "ECAT": 1, "GCAT": 2, "MCAT": 3}
         self.num_labels = 4
-        self.num_trn_examples = 10000 # 1000, 2000, 5000, 10000
+        self.num_trn_examples = 1000 # 1000, 2000, 5000, 10000
         self.contents = OrderedDict()
         self.create_contents()
 
@@ -29,8 +29,6 @@ class MLDocDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        # mldoc_ = "./data/download/mldoc/"
-        # mldoc_ = "/input/jongwooko/xlt/data/download/mldoc/"
         mldoc_ = "/data/FSXLT_dataset/data/download/mldoc/"
         entries = []
         for abbr in self.lang_abbres:
@@ -201,23 +199,4 @@ class MLDocDataset(MultilingualRawDataset):
                     )
                 )
                 
-                # try:
-                #     portion_identifier = -1
-                #     label = line[0].strip()
-                #     text_a = line[1].strip()
-                # except:
-                #     continue
-                # assert label in self.get_labels(), f"{label}, {input_file}"
-                # sentence_egs.append(
-                #     (
-                #         language,
-                #         which_split,
-                #         SentenceExample(
-                #             uid=f"english-{idx}-{which_split}",
-                #             text_a=text_a,
-                #             label=label,
-                #             portion_identifier=portion_identifier,
-                #         ),
-                #     )
-                # )
         return sentence_egs

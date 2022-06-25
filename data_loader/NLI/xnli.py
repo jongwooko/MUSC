@@ -48,13 +48,9 @@ class XNLIDataset(MultilingualRawDataset):
 
     def create_contents(self):
         # for mnli, we only use train (no dev)
-        # mnli_ = "./data/download/xnli/"
-        # mnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         entries = []
         
-        # xnli_ = "./data/download/xnli/"
         xnli_ = "/data/FSXLT_dataset/data/download/xnli/"
-        # xnli_ = "/input/jongwooko/xlt/data/download/xnli/"
         for lang_abbre in self.lang_abbres:
             for which_split in ("train", "dev", "test"):
                 file_ = os.path.join(xnli_, f"{which_split}-{lang_abbre}.tsv")

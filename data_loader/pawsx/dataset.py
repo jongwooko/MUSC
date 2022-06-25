@@ -29,9 +29,7 @@ class PAWSXDataset(MultilingualRawDataset):
         return self.contents[language]
 
     def create_contents(self):
-        # pawsx_ = "/input/jongwooko/xlt/data/download/pawsx/"
         pawsx_ = "/data/FSXLT_dataset/data/download/pawsx/"
-#         pawsx_ = "./data/download/pawsx/"
         entries = []
         for lang in self.lang_abbres:
             for which_split in ("train", "dev", "test"):
