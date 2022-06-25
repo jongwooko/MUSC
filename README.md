@@ -1,4 +1,4 @@
-# FSXLT
+# Synergy with Translation Artifacts for Training and Inference in Multilingual Tasks (EMNLP 2022 Submission)
 
 ## References
 - How Multilingual is Multilingual BERT?
@@ -7,8 +7,8 @@
 - A Closer Look at Few-Shot Crosslingual Transfer: The Choice of Shots Matters (https://github.com/fsxlt/code)
 - https://github.com/fsxlt/buckets
 
-## How to start (TODO: Jaehoon)
-All steps start from the root directory (i.e., FSXLT folder).
+## How to start
+All steps start from the root directory.
 
 1. Set conda env
 ```
@@ -19,7 +19,7 @@ bash install_tools.sh
 2. Download datasets
 - For MLDocs dataset, refer to https://github.com/facebookresearch/MLDoc
 - For MARC dataset, refer to https://docs.opendata.aws/amazon-reviews-ml/readme.html
-- For XTREME datasets (XNLI, PAWSX, POS, NER), download NER dataset manually following ./data/README.md in advance.
+- For XTREME datasets (XNLI, PAWSX)
 
 ```
 source activate fsxlt
@@ -30,32 +30,12 @@ cd data
 bash scripts/download_data.sh
 ```
 
-3. Source Fine-tuning (Zero-Shot Cross-Lingual Transfer, ZS-XLT)
+3. MUSC (refer to exps folder)
 ```
 source activate fsxlt
 pip install -r requirements.txt
 ```
 
-- [ ] for MLDoc dataset, `bash exps/mldoc_source_ft.sh`
-- [ ] for MARC dataset,  `bash exps/marc_source_ft.sh`
-- [X] for XNLI dataset,  `bash exps/xnli_source_ft.sh`
-- [X] for PAWSX dataset, `bash exps/pawsx_source_ft.sh`
-- [X] for POS dataset,   `bash exps/pos_source_ft.sh`
-- [X] for NER dataset,   `bash exps/ner_source_ft.sh`
-
-4. Target Fine-tuning (Few-Shot Cross-Lingual Transfer, FS-XLT)
-
-- [ ] Convert target samples into .pkl format (./buckets -> ./sampled_infos/sampled_data)
-- [ ] Chinese unicode
-- [X] for POS dataset,   `bash exps/pos_target_ft.sh` (Check detail)
-- [X] for NER dataset,   `bash exps/ner_target_ft.sh` (Check detail)
-
-5. Test
-
-## Related to the target datasets
-- MLDoc  (Not provided. Refer to ./buckets/readme.md)
-- MARC   (Refer to ./buckets/marc)
-- XNLI   (Refer to ./buckets/xnli)
-- PAWSX  (Refer to ./buckets/pawsx)
-- POS    (Refer to ./buckets/udpos)
-- NER    (Refer to ./buckets/panx)
+## Reproducibility Checklist
+- We used "bert-base-multilingual-cased". Vocab size is about 120,000 and the number of parameters is about 180M.
+- We used GeForce RTX 3090. For training MUSC on XNLI (the largest time-consuming task), about 2 days are required.
