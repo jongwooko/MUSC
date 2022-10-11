@@ -1,4 +1,5 @@
-# Synergy with Translation Artifacts for Training and Inference in Multilingual Tasks (EMNLP 2022 Submission)
+# [Official] Synergy with Translation Artifacts for Training and Inference in Multilingual Tasks
+This repository contains code for the paper "Synergy with Translation Artifacts for Training and Inference in Multilingual Tasks" presented in EMNLP 2022.
 
 ## Reproducibility Checklist
 - We used "bert-base-multilingual-cased". Vocab size is about 120,000 and the number of parameters is about 180M.
@@ -32,6 +33,10 @@ bash scripts/download_data.sh
 source activate fsxlt
 pip install -r requirements.txt
 ```
+
+## Contact
+- Jaehoon Oh: jhoon.oh@kaist.ac.kr
+- Jongwoo Ko: jongwoo.ko@kaist.ac.kr
 
 ## References
 - How Multilingual is Multilingual BERT?
